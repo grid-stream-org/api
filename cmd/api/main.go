@@ -6,46 +6,59 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
-	"github.com/grid-stream-org/api/internal/app/handlers"
-	"api/internal/app/middlewares"
-	"api/internal/config"
-	"api/pkg/database"
-	
+	// "github.com/grid-stream-org/api/internal/app/middlewares"
+
+	"github.com/grid-stream-org/api/internal/config"
+
+	// "github.com/grid-stream-org/api/internal/app/handlers"
+	"github.com/grid-stream-org/api/pkg/database"
+	"github.com/grid-stream-org/api/pkg/logger"
+	"github.com/pkg/errors"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	//"github.com/go-chi/chi/v5/middleware"
 )
 
 func main() {
-	ctx := context.Background()
+	if err := run(); err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		os.Exit(1)
+	}
+}
 
-	// Load configuration
+func run() error {
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer cancel()
+
 	cfg, err := config.Load()
 	if err != nil {
-		logging.Error(ctx, "failed to load configuration: %v", err)
-		os.Exit(1)
+		return errors.Wrap(err, "loading conf")
 	}
 
-	// Set up database connection
-	db, err := database.NewConnection(ctx, cfg.DatabaseURL)
+	log, err := logger.Init(&cfg.Logger, nil)
 	if err != nil {
-		logging.Error(ctx, "failed to connect to database: %v", err)
-		os.Exit(1)
+		return errors.Wrap(err, "init logger")
 	}
-	defer db.Close()
+
+	// Set up big query connection
+	if err := database.InitializeBigQueryClient(ctx, cfg, log); err != nil {
+		log.Error("Failed to initialize BigQuery client")
+	}
+	defer database.CloseBigQueryClient(log)
 
 	// Create the router
 	r := chi.NewRouter()
 
 	// Apply middleware
-	r.Use(middleware.Logger)
-	r.Use(middlewares.RequestID)
-	r.Use(middlewares.Recoverer)
+	// r.Use(middleware.Logger)
+	// r.Use(middlewares.RequestID)
+	// r.Use(middlewares.Recoverer)
 
 	// Register routes
-	r.Post("/posts", handlers.CreatePostHandler(db))
+	// r.Post("/posts", handlers.CreatePostHandler(db))
 
 	// Set up the server
 	srv := &http.Server{
@@ -57,34 +70,17 @@ func main() {
 
 	// Start the server
 	go func() {
-		logging.Info(ctx, "starting API server on port %d", cfg.Port)
+		log.Info("starting API server on port %d", cfg.Port)
 		if err := srv.ListenAndServe(); err != nil {
-			logging.Error(ctx, "API server failed: %v", err)
+			log.Error("API server failed: %v", err)
 		}
 	}()
 
-	// Wait for interrupt signal to gracefully shut down the server
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
-	<-quit
+	log.Info("Application is running...")
+	<-ctx.Done()
 
-	logging.Info(ctx, "shutting down API server")
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	log.Info("Shutting down...")
+	// call shutdowns
 
-	if err := srv.Shutdown(ctx); err != nil {
-		logging.Error(ctx, "failed to gracefully shut down server: %v", err)
-	}
-
-	logging.Info(ctx, "API server stopped")
+	return nil
 }
-
-// getenv := func(key string) string {
-// 	switch key {
-// 	case "MYAPP_FORMAT":
-// 		return "markdown"
-// 	case "MYAPP_TIMEOUT":
-// 		return "5s"
-// 	default:
-// 		return ""
-// }
