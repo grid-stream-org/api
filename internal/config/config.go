@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+    "github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -31,6 +32,12 @@ type LoggerConfig struct {
 }
 
 func Load() (*Config, error) {
+    err := godotenv.Load()
+    if err != nil {
+        return nil, errors.New("missing .env file")
+    }
+
+
 	port := func() int {
 		if p, err := strconv.Atoi(os.Getenv("PORT")); err == nil {
 			return p
@@ -50,7 +57,7 @@ func Load() (*Config, error) {
 		return nil, errors.New("missing big query project id")
 	}
 
-	bigQueryCredentialsFile := os.Getenv("BIGQUERY_CREDENTIALS_FILE")
+	bigQueryCredentialsFile := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
 	if bigQueryCredentialsFile == "" {
 		return nil, errors.New("missing big query creds")
 	}
@@ -64,5 +71,10 @@ func Load() (*Config, error) {
 				CredsFile: bigQueryCredentialsFile,
 			},
 		},
+        Logger: LoggerConfig{
+            Level:  os.Getenv("LOG_LEVEL"),
+            Format: os.Getenv("LOG_FORMAT"),
+            Output: os.Getenv("LOG_OUTPUT"),
+        },
 	}, nil
 }

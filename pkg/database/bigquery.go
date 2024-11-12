@@ -12,6 +12,8 @@ var BigQueryClient *bigquery.Client
 
 // InitializeBigQueryClient sets up the BigQuery client
 func InitializeBigQueryClient(ctx context.Context, cfg *config.Config, log *slog.Logger) error {
+    // google api will automatically load credential file from .env file as long as it is named properly
+    // all we need to pass in is the project id, unreal!
 	client, err := bigquery.NewClient(ctx, cfg.Database.BigQuery.ProjectID)
 	if err != nil {
 		return err

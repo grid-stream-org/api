@@ -7,19 +7,15 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
-	// "github.com/grid-stream-org/api/internal/app/middlewares"
 
 	"github.com/grid-stream-org/api/internal/config"
 
-	// "github.com/grid-stream-org/api/internal/app/handlers"
 	"github.com/grid-stream-org/api/pkg/database"
 	"github.com/grid-stream-org/api/pkg/logger"
+    "github.com/grid-stream-org/api/internal/app/server"
 	"github.com/pkg/errors"
 
-	"github.com/go-chi/chi/v5"
-	//"github.com/go-chi/chi/v5/middleware"
 )
 
 func main() {
@@ -45,35 +41,21 @@ func run() error {
 
 	// Set up big query connection
 	if err := database.InitializeBigQueryClient(ctx, cfg, log); err != nil {
-		log.Error("Failed to initialize BigQuery client")
+        return errors.Wrap(err, "Failed init Big Queryu client")
 	}
 	defer database.CloseBigQueryClient(log)
 
-	// Create the router
-	r := chi.NewRouter()
+    // setup server
+	srv := server.NewServer(cfg, log)
 
-	// Apply middleware
-	// r.Use(middleware.Logger)
-	// r.Use(middlewares.RequestID)
-	// r.Use(middlewares.Recoverer)
-
-	// Register routes
-	// r.Post("/posts", handlers.CreatePostHandler(db))
-
-	// Set up the server
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.Port),
-		Handler:      r,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
-	}
-
-	// Start the server
+    // Start the server in a goroutine
+	serverErrChan := make(chan error, 1)
 	go func() {
-		log.Info("starting API server on port %d", cfg.Port)
-		if err := srv.ListenAndServe(); err != nil {
-			log.Error("API server failed: %v", err)
+		log.Info("Starting API server...")
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			serverErrChan <- errors.Wrap(err, "server failed")
 		}
+		close(serverErrChan)
 	}()
 
 	log.Info("Application is running...")
