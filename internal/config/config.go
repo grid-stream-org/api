@@ -14,6 +14,7 @@ type Config struct {
 	Timeout	    time.Duration   `envconfig:"timeout"` // timeout for requests
 	Database	DatabaseConfig	 `envconfig:"database"`
     Logger      LoggerConfig     `envconfig:"LOG"`  
+    Firebase    FirebaseConfig   `envconfig:"auth"`
 }
 
 type DatabaseConfig struct {
@@ -23,6 +24,11 @@ type DatabaseConfig struct {
 type BigQueryConfig struct {
 	ProjectID	string `envconfig:"project_id"`
 	CredsFile	string `envconfig:"credentials"`
+}
+
+type FirebaseConfig struct {
+    ProjectID        string `envconfig:"firebase_project_id"`
+    GoogleCredential string `envconfig:"firebase_google_credential"`
 }
 
 type LoggerConfig struct {
@@ -62,6 +68,16 @@ func Load() (*Config, error) {
 		return nil, errors.New("missing big query creds")
 	}
 
+    firebaseProjectID := os.Getenv("FIREBASE_PROJECT_ID")
+    if firebaseProjectID == "" {
+        return nil, errors.New("missing Firebase project ID")
+    }
+
+    firebaseGoogleCredential := os.Getenv("GOOGLE_CLOUD_PROJECT")
+    if firebaseGoogleCredential == "" {
+        return nil, errors.New("missing Firebase Google credential file")
+    }
+
 	return &Config{
 		Port:	port,
 		Timeout:	timeout,
@@ -75,6 +91,10 @@ func Load() (*Config, error) {
             Level:  os.Getenv("LOG_LEVEL"),
             Format: os.Getenv("LOG_FORMAT"),
             Output: os.Getenv("LOG_OUTPUT"),
+        },
+        Firebase: FirebaseConfig{
+            ProjectID: firebaseProjectID,
+            GoogleCredential: firebaseGoogleCredential,
         },
 	}, nil
 }

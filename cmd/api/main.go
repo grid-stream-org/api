@@ -12,6 +12,7 @@ import (
 	"github.com/grid-stream-org/api/internal/config"
 
 	"github.com/grid-stream-org/api/pkg/database"
+    "github.com/grid-stream-org/api/pkg/firebase"
 	"github.com/grid-stream-org/api/pkg/logger"
     "github.com/grid-stream-org/api/internal/app/server"
 	"github.com/pkg/errors"
@@ -40,13 +41,20 @@ func run() error {
 	}
 
 	// Set up big query connection
-	if err := database.InitializeBigQueryClient(ctx, cfg, log); err != nil {
+	bqClient, err := database.InitializeBigQueryClient(ctx, cfg, log)
+    if err != nil {    
         return errors.Wrap(err, "Failed init Big Queryu client")
 	}
 	defer database.CloseBigQueryClient(log)
 
+    // Initialize Firebase Auth client
+	firebaseAuth, err := firebase.InitializeFirebaseClient(ctx, cfg, log)
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize Firebase Auth client")
+	}
+
     // setup server
-	srv := server.NewServer(cfg, log)
+	srv := server.NewServer(cfg, bqClient, firebaseAuth, log)
 
     // Start the server in a goroutine
 	serverErrChan := make(chan error, 1)

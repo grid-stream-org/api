@@ -1,39 +1,45 @@
-// verifies if request is authenticated
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
-	"github.com/go-chi/jwtauth/v5"
+	"firebase.google.com/go/auth"
 )
 
-func AuthMiddleware(next http.Handler, tokenAuth *jwtauth.JWTAuth) http.Handler {
+type AuthMiddleware struct {
+	FirebaseAuth *auth.Client
+}
+
+func NewAuthMiddleware(firebaseAuth *auth.Client) *AuthMiddleware {
+	return &AuthMiddleware{FirebaseAuth: firebaseAuth}
+}
+
+func (am *AuthMiddleware) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Get the Authorization header
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		// Split "Bearer <token>"
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		token := parts[1]
+		tokenString := parts[1]
 
-		// Validate the token
-		_, err := jwtauth.VerifyToken(tokenAuth, token)
+		// Verify the Firebase JWT token
+		_, err := am.FirebaseAuth.VerifyIDToken(r.Context(), tokenString)
 		if err != nil {
+            fmt.Printf("err verrifying token: %v\n", err);
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		// Token is valid, proceed to the next handler
 		next.ServeHTTP(w, r)
 	})
 }
