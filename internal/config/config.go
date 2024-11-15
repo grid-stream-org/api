@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
-    "github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -38,11 +38,14 @@ type LoggerConfig struct {
 }
 
 func Load() (*Config, error) {
-    err := godotenv.Load()
-    if err != nil {
-        return nil, errors.New("missing .env file")
+    // Don't try to load .env file if we are in a test environment
+    // TODO maybe there's a better way to get around this, should look into a better way of loading environment variables
+    if os.Getenv("GO_ENV") != "test" {
+        err := godotenv.Load()
+        if err != nil {
+            return nil, errors.New("missing .env file and required environment variables are not set")
+        }
     }
-
 
 	port := func() int {
 		if p, err := strconv.Atoi(os.Getenv("PORT")); err == nil {
