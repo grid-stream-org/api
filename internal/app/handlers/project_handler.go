@@ -34,16 +34,20 @@ func (h *ProjectHandlers) GetProjectHandler(w http.ResponseWriter, r *http.Reque
 
 	// Return the project as JSON
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(project)
+	err = json.NewEncoder(w).Encode(project)
+    if err != nil {
+        http.Error(w, "Encoding failed", http.StatusNotFound)
+		return
+    }
 }
 
 // TODO: CreateProjectHandler handles creating a new project
 func (h *ProjectHandlers) CreateProjectHandler(w http.ResponseWriter, r *http.Request) {
 	// logic for creating a project, here we would use our models/project.go to verify that we have a valid project
-    // don't forget to add import 	"github.com/grid-stream-org/api/internal/models"
+	// don't forget to add import 	"github.com/grid-stream-org/api/internal/models"
 }
 
-// TODO: UpdateProjectHandler handles updating a project 
+// TODO: UpdateProjectHandler handles updating a project
 func (h *ProjectHandlers) UpdateProjectHandler(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Not implemented", http.StatusNotImplemented)
 }

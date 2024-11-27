@@ -35,7 +35,7 @@ func (am *AuthMiddleware) Handler(next http.Handler) http.Handler {
 		// Verify the Firebase JWT token
 		_, err := am.FirebaseAuth.VerifyIDToken(r.Context(), tokenString)
 		if err != nil {
-            fmt.Printf("err verrifying token: %v\n", err);
+			fmt.Printf("err verrifying token: %v\n", err)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}

@@ -19,32 +19,33 @@ func NewRouter(log *slog.Logger, bqclient *bigquery.Client, fbclient *auth.Clien
 	// Create a new chi router
 	r := chi.NewRouter()
 
-    // Coors config, I hate coors
-    corsOptions := cors.Options{
-        AllowedOrigins:     []string{"http://localhost:5173"}, // frontend
-        AllowedMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-        AllowedHeaders:     []string{"Accept", "Authorization", "Content-Type"},
-        ExposedHeaders:     []string{"Link"},
+	// Coors config, I hate coors
+	corsOptions := cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173"}, // frontend
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
+		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: true,
 		MaxAge:           300,
-    }
+	}
 
 	// Apply global middleware
-    r.Use(cors.Handler(corsOptions))
+	r.Use(cors.Handler(corsOptions))
 	r.Use(middleware.RequestID) // generate unique request id for each request
 	r.Use(middleware.Logger)    // midleware logger to log incoming requests
 	r.Use(middleware.Recoverer) // prevents server from crashing and responds with 500 error
-    // initialize auth middleware
-    authMiddleware := middlewares.NewAuthMiddleware(fbclient)
-    
-    // initialize repository and handler for Projects
+	// initialize auth middleware
+	authMiddleware := middlewares.NewAuthMiddleware(fbclient)
+
+	// initialize repository and handlers
 	projectRepo := repositories.NewProjectRepository(bqclient)
 	projectHandlers := handlers.NewProjectHandlers(projectRepo, log)
+    healthHandler := handlers.NewHealthHandler(log)
 
 	// Define routes
-	r.Get("/health", handlers.HealthCheckHandler(log))
+	r.Get("/health", healthHandler.HealthCheckHandler)
 	r.Route("/projects", func(r chi.Router) {
-        r.Use(authMiddleware.Handler) // Apply AuthMiddleware to verify jwt token
+		r.Use(authMiddleware.Handler) // Apply AuthMiddleware to verify jwt token
 		r.Get("/{id}", projectHandlers.GetProjectHandler)
 		r.Put("/{id}", projectHandlers.UpdateProjectHandler)
 	})

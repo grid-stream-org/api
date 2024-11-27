@@ -1,4 +1,5 @@
 package models
+
 // defines project model
 
 import "time"
