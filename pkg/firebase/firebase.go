@@ -28,7 +28,7 @@ func InitializeFirebaseClient(ctx context.Context, cfg *config.Config, log *slog
 	if err != nil {
 		return nil, err
 	}
-    
+
 	FirebaseAuthClient = client
 	log.Info("Firebase Auth client initialized successfully")
 	return FirebaseAuthClient, nil
