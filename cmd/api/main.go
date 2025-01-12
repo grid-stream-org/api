@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/signal"
@@ -18,13 +19,14 @@ import (
 )
 
 func main() {
-	if err := run(); err != nil {
+    ctx := context.Background()
+	if err := run(ctx, os.Stdout, os.Args); err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		os.Exit(1)
 	}
 }
 
-func run() error {
+func run(ctx context.Context, w io.Writer, args []string) error {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
@@ -51,8 +53,14 @@ func run() error {
 		return errors.Wrap(err, "failed to initialize Firebase Auth client")
 	}
 
-	// setup server
-	srv := server.NewServer(cfg, bqClient, firebaseAuth, log)
+	// setup server handler
+	handler := server.NewServer(cfg, bqClient, firebaseAuth, log)
+
+    // Create the HTTP server
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%d", cfg.Port),
+		Handler: handler,
+	}
 
 	// Start the server in a goroutine
 	serverErrChan := make(chan error, 1)
