@@ -6,6 +6,7 @@ GOTEST=$(GOCMD) test
 GOMOD=$(GOCMD) mod
 GOFMT=$(GOCMD) fmt
 GOVET=$(GOCMD) vet
+GOLINT= golangci-lint
 
 LDFLAGS=-ldflags "-s -w"
 
@@ -35,6 +36,9 @@ clean: ## Clean build files
 
 run: build ## Build and run the binary
 	./$(BINARY)
+
+lint: ## run lint check
+	$(GOLINT) run
 
 fmt: ## Run go fmt
 	$(GOFMT) ./...

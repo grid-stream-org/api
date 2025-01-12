@@ -27,7 +27,7 @@ func main() {
 }
 
 func run(ctx context.Context, w io.Writer, args []string) error {
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
 	cfg, err := config.Load()
