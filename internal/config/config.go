@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -62,8 +63,8 @@ func Load() (*Config, error) {
 		return 10 * time.Second
 	}()
 
-	allowedOrigins := os.Getenv("ALLOWED_ORIGINS")
-	if allowedOrigins == "" {
+	allowedOrigins := strings.Split(os.Getenv("ALLOWED_ORIGINS"), ",")
+	if allowedOrigins == nil {
 		return nil, errors.New("missing COORS origins")
 	}
 
@@ -88,8 +89,9 @@ func Load() (*Config, error) {
 	}
 
 	return &Config{
-		Port:    port,
-		Timeout: timeout,
+		Port:           port,
+		AllowedOrigins: allowedOrigins,
+		Timeout:        timeout,
 		Database: DatabaseConfig{
 			BigQuery: BigQueryConfig{
 				ProjectID: bigQueryProjectId,
