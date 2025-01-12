@@ -10,11 +10,12 @@ import (
 )
 
 type Config struct {
-	Port     int            `envconfig:"port"`    // port api will run on
-	Timeout  time.Duration  `envconfig:"timeout"` // timeout for requests
-	Database DatabaseConfig `envconfig:"database"`
-	Logger   LoggerConfig   `envconfig:"LOG"`
-	Firebase FirebaseConfig `envconfig:"auth"`
+	Port           int            `envconfig:"port"` // port api will run on
+	AllowedOrigins []string       `envconfig:"allowed_origins"`
+	Timeout        time.Duration  `envconfig:"timeout"` // timeout for requests
+	Database       DatabaseConfig `envconfig:"database"`
+	Logger         LoggerConfig   `envconfig:"LOG"`
+	Firebase       FirebaseConfig `envconfig:"auth"`
 }
 
 type DatabaseConfig struct {
@@ -32,9 +33,9 @@ type FirebaseConfig struct {
 }
 
 type LoggerConfig struct {
-	Level  string `envconfig:"LEVEL" default:"INFO"`
-	Format string `envconfig:"FORMAT" default:"text"`
-	Output string `envconfig:"OUTPUT" default:"stdout"`
+	Level  string `envconfig:"LEVEL"`
+	Format string `envconfig:"FORMAT"`
+	Output string `envconfig:"OUTPUT"`
 }
 
 func Load() (*Config, error) {
@@ -60,6 +61,11 @@ func Load() (*Config, error) {
 		}
 		return 10 * time.Second
 	}()
+
+	allowedOrigins := os.Getenv("ALLOWED_ORIGINS")
+	if allowedOrigins == "" {
+		return nil, errors.New("missing COORS origins")
+	}
 
 	bigQueryProjectId := os.Getenv("BIGQUERY_PROJECT_ID")
 	if bigQueryProjectId == "" {

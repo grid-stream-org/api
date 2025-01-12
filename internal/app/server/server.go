@@ -22,18 +22,10 @@ func NewServer(
 	// r := NewRouter(log, bqclient, fbclient)
 	r := chi.NewRouter()
 
-	addMidleware(r, log, fbclient, bqclient)
-    AddRoutes(r, log, bqclient, fbclient)
+	addMidleware(r, log, fbclient, bqclient, cfg)
+	AddRoutes(r, log, bqclient, fbclient)
 
-	// Configure and return the HTTP server
-	// return &http.Server{
-	// 	Addr:         fmt.Sprintf(":%d", cfg.Port),
-	// 	Handler:      r,
-	// 	ReadTimeout:  10 * time.Second,
-	// 	WriteTimeout: 10 * time.Second,
-	// }
-    
-    return r
+	return r
 
 }
 
@@ -42,10 +34,11 @@ func addMidleware(
 	log *slog.Logger,
 	fbClient *auth.Client,
 	bqClient *bigquery.Client,
+	cfg *config.Config,
 ) {
 	// TODO should be configured with conf maybe
 	corsOptions := cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5173"}, // frontend
+		AllowedOrigins:   cfg.AllowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
 		ExposedHeaders:   []string{"Link"},
