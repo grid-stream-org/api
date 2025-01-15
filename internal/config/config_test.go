@@ -17,6 +17,7 @@ func TestPopulatedConfig(t *testing.T) {
 	t.Setenv("LOG_OUTPUT", "stdout")
 	t.Setenv("PORT", "8080")
 	t.Setenv("TIMEOUT", "10s")
+    t.Setenv("ALLOWED_ORIGINS", "https://testorigin,https://anotherorigin")
 
 	// expected values
 	port := 8080
@@ -26,6 +27,7 @@ func TestPopulatedConfig(t *testing.T) {
 	logFormat := "text"
 	logOutput := "stdout"
 	fbId := "fb-test-id"
+    origins := []string{"https://testorigin", "https://anotherorigin"}
 
 	cfg, err := Load()
 	if err != nil {
@@ -35,6 +37,16 @@ func TestPopulatedConfig(t *testing.T) {
 	// Perform assertions
 	if cfg.Port != port {
 		t.Fatalf("Port mismatch: expected %d, got %d", port, cfg.Port)
+	}
+
+    if len(cfg.AllowedOrigins) != len(origins) {
+		t.Fatalf("AllowedOrigins length mismatch: expected %d, got %d", len(origins), len(cfg.AllowedOrigins))
+	}
+
+	for i, origin := range origins {
+		if cfg.AllowedOrigins[i] != origin {
+			t.Fatalf("AllowedOrigins mismatch at index %d: expected %s, got %s", i, origin, cfg.AllowedOrigins[i])
+		}
 	}
 
 	if cfg.Timeout != timeout {
@@ -72,6 +84,7 @@ func TestMissingCredential(t *testing.T) {
 	t.Setenv("LOG_OUTPUT", "stdout")
 	t.Setenv("PORT", "8080")
 	t.Setenv("TIMEOUT", "10s")
+    t.Setenv("ALLOWED_ORIGINS", "https://testorigin")
 
 	expect := "missing big query creds"
 

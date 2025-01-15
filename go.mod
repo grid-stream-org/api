@@ -31,6 +31,7 @@ require (
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/apache/arrow/go/v15 v15.0.2 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
+	github.com/go-chi/chi v1.5.5
 	github.com/go-chi/jwtauth/v5 v5.3.1
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
