@@ -7,7 +7,7 @@ import (
 	"cloud.google.com/go/bigquery"
 	"firebase.google.com/go/auth"
 	"github.com/go-chi/chi/v5"
-	"github.com/grid-stream-org/api/internal/app/handlers"
+	"github.com/grid-stream-org/api/internal/app/handlers/v1"
 	"github.com/grid-stream-org/api/internal/app/middlewares"
 	"github.com/grid-stream-org/api/internal/app/repositories"
 )
@@ -30,11 +30,12 @@ func AddRoutes(
 	// Health check route
 	r.Get("/health", middlewares.WrapHandler(healthHandler.HealthCheckHandler))
 
-	// Projects routes
-	r.Route("/projects", func(r chi.Router) {
-		r.Use(authMiddleware.Handler) // JWT auth middleware for projects
-		r.Get("/{id}", middlewares.WrapHandler(projectHandlers.GetProjectHandler))
-		r.Put("/{id}", middlewares.WrapHandler(projectHandlers.UpdateProjectHandler))
-	})
+    r.Route("/v1", func(r chi.Router) {
+        r.Route("/projects", func(r chi.Router) {
+            r.Use(authMiddleware.Handler) // JWT auth middleware for projects
+            r.Get("/{id}", middlewares.WrapHandler(projectHandlers.GetProjectHandler))
+            r.Put("/{id}", middlewares.WrapHandler(projectHandlers.UpdateProjectHandler))
+        })
+    })
 
 }
