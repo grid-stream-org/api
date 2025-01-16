@@ -10,7 +10,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"time"
 
 	"cloud.google.com/go/bigquery"
 	"github.com/grid-stream-org/api/internal/errors"
@@ -31,22 +30,22 @@ func (r *ProjectRepository) CreateProject(ctx context.Context, post *models.Proj
 	// Use BigQuery client to insert a new project
 	// Example: Use the client to run a query or insert data
 	// INSERT INTO A1.Project (projectId, utilityId, connectionStartAt) VALUES ('projId','utilId', '2021-01-26 16:50:03' )
-    return errors.New(http.StatusNotImplemented, "not yet implemented")
+	return errors.New(http.StatusNotImplemented, "not yet implemented")
 }
 
 func (r *ProjectRepository) UpdateProject(ctx context.Context, post *models.Project) error {
 	// Use BigQuery client to insert a new project
 	// Example: Use the client to run a query or insert data
 	// INSERT INTO A1.Project (projectId, utilityId, connectionStartAt) VALUES ('projId','utilId', '2021-01-26 16:50:03' )
-    return errors.New(http.StatusNotImplemented, "not yet implemented")
+	return errors.New(http.StatusNotImplemented, "not yet implemented")
 }
 
 func (r *ProjectRepository) GetProject(ctx context.Context, id string) (*models.Project, error) {
 	// Use BigQuery client to retrieve a project by ID
 	query := `
-     SELECT projectId, utilityId, connectionStartAt
-     FROM A1.Project
-     WHERE projectId = @projectId`
+     SELECT id, utility_id, user_id, location
+     FROM gridstream_operations.projects
+     WHERE id = @projectId`
 
 	// Create a query and set parameters
 	q := r.client.Query(query)
@@ -73,9 +72,10 @@ func (r *ProjectRepository) GetProject(ctx context.Context, id string) (*models.
 
 	// Map the result to the project struct
 	project = models.Project{
-		ProjectID:         row["projectId"].(string),
-		UtilityID:         row["utilityId"].(string),
-		ConnectionStartAt: row["connectionStartAt"].(time.Time),
+		Id:        row["id"].(string),
+		UtilityId: row["utility_id"].(string),
+		UserId:    row["user_id"].(string),
+		Location:  row["location"].(string),
 	}
 	return &project, nil
 }
