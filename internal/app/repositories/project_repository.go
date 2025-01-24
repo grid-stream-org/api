@@ -25,37 +25,8 @@ func NewProjectRepository(client bqclient.BQClient, log *slog.Logger) *ProjectRe
 	return &ProjectRepository{client: client}
 }
 
-// create new instance of oflloading
+
 func (r *ProjectRepository) CreateProject(ctx context.Context, post *models.Project) error {
-	// Use BigQuery client to insert a new project
-	// Example: Use the client to run a query or insert data
-	// INSERT INTO A1.Project (projectId, utilityId, connectionStartAt) VALUES ('projId','utilId', '2021-01-26 16:50:03' )
-
-	// we can verify that the utilityId and userId is valid before inserting, this ensures that we only call bq once
-	// query := `
-	// 	DECLARE utilityExists BOOL;
-
-	// 	SET utilityExists = (
-	// 	    SELECT COUNT(1) > 0
-	// 	    FROM ` + "`grid-stream.gridstream_operations.utilities`" + `
-	// 	    WHERE utility_id = @utilityId
-	// 	);
-
-	// 	IF NOT utilityExists THEN
-	//         RAISE_ERROR('Invalid utilityId: ' || @utilityId);
-	//     IF NOT userExists THEN
-	//         RAISE_ERROR('Invalid userId: ' || @userId);
-	// 	IF utilityExistsTHEN
-	// 	    INSERT INTO ` + "`grid-stream.gridstream_operations.projects`" + `
-	// 	    (project_id, utility_id, user_id, location)
-	// 	    VALUES (@projectId, @utilityId, @userId, @location);
-	// 	END IF;
-	// `
-
-	// query := `
-	//     INSERT INTO gridstream_operations.projects
-	//         VALUES(@id, @utility_id, @user_id, @location);
-	// `
 
 	if err := r.client.Put(ctx, "projects", post); err != nil {
 		return custom_error.New(http.StatusInternalServerError, "Failed to create project", err)

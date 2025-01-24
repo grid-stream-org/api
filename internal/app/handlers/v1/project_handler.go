@@ -45,9 +45,7 @@ func (h *ProjectHandlers) GetProjectHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *ProjectHandlers) CreateProjectHandler(w http.ResponseWriter, r *http.Request) error {
-	// logic for creating a project, here we would use our models/project.go to verify that we have a valid project
-	// don't forget to add import 	"github.com/grid-stream-org/api/internal/models"
-	// var req CreateProjectRequest
+
 	var req models.Project
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return custom_error.New(http.StatusBadRequest, "Invalid request payload", err)
@@ -68,7 +66,6 @@ func (h *ProjectHandlers) CreateProjectHandler(w http.ResponseWriter, r *http.Re
 	return nil
 }
 
-// TODO: UpdateProjectHandler handles updating a project
 func (h *ProjectHandlers) UpdateProjectHandler(w http.ResponseWriter, r *http.Request) error {
 	var req models.Project
 	id := chi.URLParam(r, "id")
