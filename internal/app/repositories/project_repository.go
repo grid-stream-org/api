@@ -8,74 +8,67 @@ package repositories
 
 import (
 	"context"
-	"fmt"
+	"errors"
+	"log/slog"
 	"net/http"
-	"time"
 
-	"cloud.google.com/go/bigquery"
-	"github.com/grid-stream-org/api/internal/errors"
+	"github.com/grid-stream-org/api/internal/custom_error"
 	"github.com/grid-stream-org/api/internal/models"
-	"google.golang.org/api/iterator"
+	"github.com/grid-stream-org/batcher/pkg/bqclient"
 )
 
 type ProjectRepository struct {
-	client *bigquery.Client
+	client bqclient.BQClient
 }
 
-func NewProjectRepository(client *bigquery.Client) *ProjectRepository {
+func NewProjectRepository(client bqclient.BQClient, log *slog.Logger) *ProjectRepository {
 	return &ProjectRepository{client: client}
 }
 
-// create new instance of oflloading
+
 func (r *ProjectRepository) CreateProject(ctx context.Context, post *models.Project) error {
-	// Use BigQuery client to insert a new project
-	// Example: Use the client to run a query or insert data
-	// INSERT INTO A1.Project (projectId, utilityId, connectionStartAt) VALUES ('projId','utilId', '2021-01-26 16:50:03' )
-    return errors.New(http.StatusNotImplemented, "not yet implemented")
+
+	if err := r.client.Put(ctx, "projects", post); err != nil {
+		return custom_error.New(http.StatusInternalServerError, "Failed to create project", err)
+	}
+
+	return nil
 }
 
 func (r *ProjectRepository) UpdateProject(ctx context.Context, post *models.Project) error {
-	// Use BigQuery client to insert a new project
-	// Example: Use the client to run a query or insert data
-	// INSERT INTO A1.Project (projectId, utilityId, connectionStartAt) VALUES ('projId','utilId', '2021-01-26 16:50:03' )
-    return errors.New(http.StatusNotImplemented, "not yet implemented")
+	
+    updates := make(map[string]any)
+
+	if post.UtilityID != "" {
+		updates["utility_id"] = post.UtilityID
+	}
+
+	if post.UserID != "" {
+		updates["user_id"] = post.UserID
+	}
+
+	if post.Location != "" {
+		updates["location"] = post.Location
+	}
+
+	if len(updates) == 0 {
+		return custom_error.New(http.StatusBadRequest, "No fields to update", errors.New("No fields to update"))
+	}
+
+    if err := r.client.Update(ctx, "projects", post.ID, updates); err != nil {
+        return custom_error.New(http.StatusInternalServerError, "Failed to update", err)
+    }
+
+	return nil
 }
 
 func (r *ProjectRepository) GetProject(ctx context.Context, id string) (*models.Project, error) {
-	// Use BigQuery client to retrieve a project by ID
-	query := `
-     SELECT projectId, utilityId, connectionStartAt
-     FROM A1.Project
-     WHERE projectId = @projectId`
-
-	// Create a query and set parameters
-	q := r.client.Query(query)
-	q.Parameters = []bigquery.QueryParameter{
-		{
-			Name:  "projectId",
-			Value: id,
-		},
+	var proj models.Project
+	if err := r.client.Get(ctx, "projects", id, &proj); err != nil {
+		if err == bqclient.ErrNotFound {
+			return nil, custom_error.New(http.StatusNotFound, "Project id not found", err)
+		}
+		return nil, custom_error.New(http.StatusInternalServerError, "Failed to get project", err)
 	}
-
-	// Run the query
-	it, err := q.Read(ctx)
-	if err != nil {
-		return nil, errors.New(http.StatusInternalServerError, fmt.Sprintf("Failed to retrieve project with ID %s", id))
-	}
-
-	var project models.Project
-	// We only expect one row, so we can use Next once
-	var row map[string]bigquery.Value
-	err = it.Next(&row)
-	if err == iterator.Done {
-		return nil, errors.New(http.StatusNotFound, fmt.Sprintf("Project ID %s Not Found", id))
-	}
-
-	// Map the result to the project struct
-	project = models.Project{
-		ProjectID:         row["projectId"].(string),
-		UtilityID:         row["utilityId"].(string),
-		ConnectionStartAt: row["connectionStartAt"].(time.Time),
-	}
-	return &project, nil
+	return &proj, nil
 }

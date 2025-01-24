@@ -4,25 +4,24 @@ import (
 	"log/slog"
 	"net/http"
 
-	"cloud.google.com/go/bigquery"
 	"firebase.google.com/go/auth"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/grid-stream-org/api/internal/config"
+	"github.com/grid-stream-org/batcher/pkg/bqclient"
 )
 
 // NewServer sets up and returns an HTTP server
 func NewServer(
 	cfg *config.Config,
-	bqclient *bigquery.Client,
+	bqclient bqclient.BQClient,
 	fbclient *auth.Client,
 	log *slog.Logger,
 ) http.Handler {
-	// r := NewRouter(log, bqclient, fbclient)
 	r := chi.NewRouter()
 
-	addMidleware(r, log, fbclient, bqclient, cfg)
+	addMidleware(r, cfg)
 	AddRoutes(r, log, bqclient, fbclient)
 
 	return r
@@ -31,9 +30,6 @@ func NewServer(
 
 func addMidleware(
 	r *chi.Mux,
-	log *slog.Logger,
-	fbClient *auth.Client,
-	bqClient *bigquery.Client,
 	cfg *config.Config,
 ) {
 	// TODO should be configured with conf maybe

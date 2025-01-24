@@ -1,31 +1,19 @@
 package config
 
 import (
-	"os"
-	"strconv"
-	"strings"
-	"time"
-
+	"github.com/grid-stream-org/batcher/pkg/bqclient"
+	"github.com/grid-stream-org/batcher/pkg/logger"
 	"github.com/joho/godotenv"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/pkg/errors"
 )
 
 type Config struct {
-	Port           int            `envconfig:"port"` // port api will run on
-	AllowedOrigins []string       `envconfig:"allowed_origins"`
-	Timeout        time.Duration  `envconfig:"timeout"` // timeout for requests
-	Database       DatabaseConfig `envconfig:"database"`
-	Logger         LoggerConfig   `envconfig:"LOG"`
-	Firebase       FirebaseConfig `envconfig:"auth"`
-}
-
-type DatabaseConfig struct {
-	BigQuery BigQueryConfig `envconfig:"bigquery"`
-}
-
-type BigQueryConfig struct {
-	ProjectID string `envconfig:"project_id"`
-	CredsFile string `envconfig:"credentials"`
+	Port           int      `envconfig:"PORT"` // port api will run on
+	AllowedOrigins []string `envconfig:"ALLOWED_ORIGINS"`
+	Database       *bqclient.Config
+	Logger         *logger.Config
+	Firebase       *FirebaseConfig
 }
 
 type FirebaseConfig struct {
@@ -33,79 +21,17 @@ type FirebaseConfig struct {
 	GoogleCredential string `envconfig:"firebase_google_credential"`
 }
 
-type LoggerConfig struct {
-	Level  string `envconfig:"LEVEL"`
-	Format string `envconfig:"FORMAT"`
-	Output string `envconfig:"OUTPUT"`
-}
+func Load(skipDotenv bool) (*Config, error) {
+	var cfg Config
 
-func Load() (*Config, error) {
-	// Don't try to load .env file if we are in a test environment
-	// TODO maybe there's a better way to get around this, should look into a better way of loading environment variables
-	if os.Getenv("GO_ENV") != "test" {
-		err := godotenv.Load()
-		if err != nil {
-			return nil, errors.New("missing .env file and required environment variables are not set")
+	if !skipDotenv {
+		if err := godotenv.Load(); err != nil {
+			return nil, errors.WithStack(err)
 		}
 	}
-
-	port := func() int {
-		if p, err := strconv.Atoi(os.Getenv("PORT")); err == nil {
-			return p
-		}
-		return 8080 // default port
-	}()
-
-	timeout := func() time.Duration {
-		if t, err := time.ParseDuration(os.Getenv("TIMEOUT")); err == nil {
-			return t
-		}
-		return 10 * time.Second
-	}()
-
-	allowedOrigins := strings.Split(os.Getenv("ALLOWED_ORIGINS"), ",")
-	if allowedOrigins == nil {
-		return nil, errors.New("missing COORS origins")
+	if err := envconfig.Process("", &cfg); err != nil {
+		return nil, errors.WithStack(err)
 	}
 
-	bigQueryProjectId := os.Getenv("BIGQUERY_PROJECT_ID")
-	if bigQueryProjectId == "" {
-		return nil, errors.New("missing big query project id")
-	}
-
-	bigQueryCredentialsFile := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
-	if bigQueryCredentialsFile == "" {
-		return nil, errors.New("missing big query creds")
-	}
-
-	firebaseProjectID := os.Getenv("FIREBASE_PROJECT_ID")
-	if firebaseProjectID == "" {
-		return nil, errors.New("missing Firebase project ID")
-	}
-
-	firebaseGoogleCredential := os.Getenv("GOOGLE_CLOUD_PROJECT")
-	if firebaseGoogleCredential == "" {
-		return nil, errors.New("missing Firebase Google credential file")
-	}
-
-	return &Config{
-		Port:           port,
-		AllowedOrigins: allowedOrigins,
-		Timeout:        timeout,
-		Database: DatabaseConfig{
-			BigQuery: BigQueryConfig{
-				ProjectID: bigQueryProjectId,
-				CredsFile: bigQueryCredentialsFile,
-			},
-		},
-		Logger: LoggerConfig{
-			Level:  os.Getenv("LOG_LEVEL"),
-			Format: os.Getenv("LOG_FORMAT"),
-			Output: os.Getenv("LOG_OUTPUT"),
-		},
-		Firebase: FirebaseConfig{
-			ProjectID:        firebaseProjectID,
-			GoogleCredential: firebaseGoogleCredential,
-		},
-	}, nil
+	return &cfg, nil
 }

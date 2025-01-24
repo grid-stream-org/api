@@ -1,23 +1,25 @@
 package middlewares
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 
-	"github.com/grid-stream-org/api/internal/errors"
+	"github.com/grid-stream-org/api/internal/custom_error"
 )
 
+type HandlerFunc = func(w http.ResponseWriter, r *http.Request) error
+
 // WrapHandler wraps a handler that returns an error to fit http.HandlerFunc.
-func WrapHandler(handler func(w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {
+func WrapHandler(handler HandlerFunc, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Call the handler
 		err := handler(w, r)
 		if err != nil {
 			// Log error
-			log.Printf("Handler error: %v", err)
+			log.Error("Handler error", "error", err)
 
 			// throw our error from custom_error.go
-			if customErr, ok := err.(*errors.CustomError); ok {
+			if customErr, ok := err.(*custom_error.CustomError); ok {
 				http.Error(w, customErr.Message, customErr.Code)
 				return
 			}

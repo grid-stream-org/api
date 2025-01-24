@@ -2,94 +2,27 @@ package config
 
 import (
 	"testing"
-	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestPopulatedConfig(t *testing.T) {
-	// Set all necessary environment variables
-	t.Setenv("GO_ENV", "test")
-	t.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "./fbq-file.json")
-	t.Setenv("BIGQUERY_PROJECT_ID", "test-id")
-	t.Setenv("GOOGLE_CLOUD_PROJECT", "./fb-file.json")
-	t.Setenv("FIREBASE_PROJECT_ID", "fb-test-id")
-	t.Setenv("LOG_LEVEL", "INFO")
-	t.Setenv("LOG_FORMAT", "text")
-	t.Setenv("LOG_OUTPUT", "stdout")
+func TestLoadConfig(t *testing.T) {
+	// Set up environment variables
 	t.Setenv("PORT", "8080")
-	t.Setenv("TIMEOUT", "10s")
-    t.Setenv("ALLOWED_ORIGINS", "https://testorigin,https://anotherorigin")
+	t.Setenv("ALLOWED_ORIGINS", "http://localhost,http://example.com")
+	t.Setenv("FIREBASE_PROJECT_ID", "test-project-id")
+	t.Setenv("FIREBASE_GOOGLE_CREDENTIAL", "/path/to/credential.json")
 
-	// expected values
-	port := 8080
-	timeout := 10 * time.Second
-	bqFile := "./fbq-file.json"
-	logLevel := "INFO"
-	logFormat := "text"
-	logOutput := "stdout"
-	fbId := "fb-test-id"
-    origins := []string{"https://testorigin", "https://anotherorigin"}
+	// Load configuration without .env
+	cfg, err := Load(true)
 
-	cfg, err := Load()
-	if err != nil {
-		t.Fatalf("Error loading config: %v", err)
-	}
+	// Assertions
+	assert.NoError(t, err, "Loading configuration should not return an error")
+	assert.NotNil(t, cfg, "Config should not be nil")
 
-	// Perform assertions
-	if cfg.Port != port {
-		t.Fatalf("Port mismatch: expected %d, got %d", port, cfg.Port)
-	}
-
-    if len(cfg.AllowedOrigins) != len(origins) {
-		t.Fatalf("AllowedOrigins length mismatch: expected %d, got %d", len(origins), len(cfg.AllowedOrigins))
-	}
-
-	for i, origin := range origins {
-		if cfg.AllowedOrigins[i] != origin {
-			t.Fatalf("AllowedOrigins mismatch at index %d: expected %s, got %s", i, origin, cfg.AllowedOrigins[i])
-		}
-	}
-
-	if cfg.Timeout != timeout {
-		t.Fatalf("Timeout mismatch: expected %v, got %v", timeout, cfg.Timeout)
-	}
-
-	if cfg.Database.BigQuery.CredsFile != bqFile {
-		t.Fatalf("BigQuery creds file mismatch: expected %s, got %s", bqFile, cfg.Database.BigQuery.CredsFile)
-	}
-
-	if cfg.Logger.Level != logLevel {
-		t.Fatalf("Log level mismatch: expected %s, got %s", logLevel, cfg.Logger.Level)
-	}
-
-	if cfg.Logger.Format != logFormat {
-		t.Fatalf("Log format mismatch: expected %s, got %s", logFormat, cfg.Logger.Format)
-	}
-
-	if cfg.Logger.Output != logOutput {
-		t.Fatalf("Log output mismatch: expected %s, got %s", logOutput, cfg.Logger.Output)
-	}
-
-	if cfg.Firebase.ProjectID != fbId {
-		t.Fatalf("Firebase project ID mismatch: expected %s, got %s", fbId, cfg.Firebase.ProjectID)
-	}
-}
-
-func TestMissingCredential(t *testing.T) {
-	t.Setenv("GO_ENV", "test")
-	t.Setenv("BIGQUERY_PROJECT_ID", "test-id")
-	t.Setenv("GOOGLE_CLOUD_PROJECT", "./fb-file.json")
-	t.Setenv("FIREBASE_PROJECT_ID", "fb-test-id")
-	t.Setenv("LOG_LEVEL", "INFO")
-	t.Setenv("LOG_FORMAT", "text")
-	t.Setenv("LOG_OUTPUT", "stdout")
-	t.Setenv("PORT", "8080")
-	t.Setenv("TIMEOUT", "10s")
-    t.Setenv("ALLOWED_ORIGINS", "https://testorigin")
-
-	expect := "missing big query creds"
-
-	_, err := Load()
-	if err == nil {
-		t.Fatalf(`Error message should be "%s" but is empty`, expect)
-	}
+	// Validate config fields
+	assert.Equal(t, 8080, cfg.Port, "Port should be 8080")
+	assert.ElementsMatch(t, []string{"http://localhost", "http://example.com"}, cfg.AllowedOrigins, "Allowed origins should match")
+	assert.Equal(t, "test-project-id", cfg.Firebase.ProjectID, "Firebase ProjectID should match")
+	assert.Equal(t, "/path/to/credential.json", cfg.Firebase.GoogleCredential, "Firebase GoogleCredential should match")
 }
