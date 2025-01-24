@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/grid-stream-org/api/internal/errors"
+	"github.com/grid-stream-org/api/internal/custom_error"
 )
 
 // HealthHandler contains the logger for health check handling.
@@ -25,8 +25,7 @@ func (h *HealthHandler) HealthCheckHandler(w http.ResponseWriter, r *http.Reques
 	w.WriteHeader(http.StatusOK)
 	_, err := w.Write([]byte("OK"))
 	if err != nil {
-		h.Log.Error("Failed to write response", "error", err)
-        return errors.New(http.StatusInternalServerError, "Unexpected error hitting health endpoint")
+        return custom_error.New(http.StatusInternalServerError, "Unexpected error hitting health endpoint", err)
 	}
     return nil
 }

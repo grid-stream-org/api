@@ -1,11 +1,9 @@
 package models
 
-// defines project model
-
 // Represents an offloading instance from a DER(s)
 type Project struct {
-	Id        string `json:"id"`         // Unique identifier for the project
-	UtilityId string `json:"utility_id"` // Unique identifier for the utility
-	UserId    string `json:"user_id"`
-	Location  string `json:"location"`
+	ID        string `json:"id" bigquery:"id"`                 // Unique identifier for the project
+	UtilityID string `json:"utility_id" bigquery:"utility_id"` // Unique identifier for the utility
+	UserID    string `json:"user_id" bigquery:"user_id"`
+	Location  string `json:"location" bigquery:"location"`
 }

@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -12,7 +13,7 @@ type AuthMiddleware struct {
 	FirebaseAuth *auth.Client
 }
 
-func NewAuthMiddleware(firebaseAuth *auth.Client) *AuthMiddleware {
+func NewAuthMiddleware(firebaseAuth *auth.Client, log *slog.Logger) *AuthMiddleware {
 	return &AuthMiddleware{FirebaseAuth: firebaseAuth}
 }
 

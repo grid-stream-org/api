@@ -9,17 +9,16 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/grid-stream-org/api/internal/config"
-
 	"github.com/grid-stream-org/api/internal/app/server"
-	"github.com/grid-stream-org/api/pkg/database"
+	"github.com/grid-stream-org/api/internal/config"
 	"github.com/grid-stream-org/api/pkg/firebase"
-	"github.com/grid-stream-org/api/pkg/logger"
+	"github.com/grid-stream-org/batcher/pkg/bqclient"
+	"github.com/grid-stream-org/batcher/pkg/logger"
 	"github.com/pkg/errors"
 )
 
 func main() {
-    ctx := context.Background()
+	ctx := context.Background()
 	if err := run(ctx, os.Stdout, os.Args); err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		os.Exit(1)
@@ -30,22 +29,19 @@ func run(ctx context.Context, w io.Writer, args []string) error {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
-	cfg, err := config.Load()
+	cfg, err := config.Load(false)
 	if err != nil {
 		return errors.Wrap(err, "loading conf")
 	}
-
-	log, err := logger.Init(&cfg.Logger, nil)
+	log, err := logger.New(cfg.Logger, w)
 	if err != nil {
 		return errors.Wrap(err, "init logger")
 	}
 
-	// Set up big query connection
-	bqClient, err := database.InitializeBigQueryClient(ctx, cfg, log)
-	if err != nil {
-		return errors.Wrap(err, "Failed init Big Queryu client")
-	}
-	defer database.CloseBigQueryClient(log)
+	bqClient, err := bqclient.New(ctx, cfg.Database)
+    if err != nil {
+        return errors.Wrap(err, "failed to init big query client")
+    }
 
 	// Initialize Firebase Auth client
 	firebaseAuth, err := firebase.InitializeFirebaseClient(ctx, cfg, log)
@@ -56,7 +52,7 @@ func run(ctx context.Context, w io.Writer, args []string) error {
 	// setup server handler
 	handler := server.NewServer(cfg, bqClient, firebaseAuth, log)
 
-    // Create the HTTP server
+	// Create the HTTP server
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.Port),
 		Handler: handler,
