@@ -17,6 +17,9 @@ func (e *CustomError) Error() string {
 }
 
 func New(code int, message string, err error) *CustomError {
+    if err == nil {
+        err = errors.New(message)
+    }
 	return &CustomError{
 		Code:    code,
 		Message: message,

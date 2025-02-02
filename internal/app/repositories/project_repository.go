@@ -8,10 +8,10 @@ package repositories
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 	"net/http"
 
+	"github.com/grid-stream-org/api/internal/app/logic"
 	"github.com/grid-stream-org/api/internal/custom_error"
 	"github.com/grid-stream-org/api/internal/models"
 	"github.com/grid-stream-org/batcher/pkg/bqclient"
@@ -25,7 +25,6 @@ func NewProjectRepository(client bqclient.BQClient, log *slog.Logger) *ProjectRe
 	return &ProjectRepository{client: client}
 }
 
-
 func (r *ProjectRepository) CreateProject(ctx context.Context, post *models.Project) error {
 
 	if err := r.client.Put(ctx, "projects", post); err != nil {
@@ -35,29 +34,17 @@ func (r *ProjectRepository) CreateProject(ctx context.Context, post *models.Proj
 	return nil
 }
 
-func (r *ProjectRepository) UpdateProject(ctx context.Context, post *models.Project) error {
-	
-    updates := make(map[string]any)
+func (r *ProjectRepository) UpdateProject(ctx context.Context, id string, post *models.Project) error {
 
-	if post.UtilityID != "" {
-		updates["utility_id"] = post.UtilityID
-	}
-
-	if post.UserID != "" {
-		updates["user_id"] = post.UserID
-	}
-
-	if post.Location != "" {
-		updates["location"] = post.Location
-	}
+	updates := logic.ExtractBody(post)
 
 	if len(updates) == 0 {
-		return custom_error.New(http.StatusBadRequest, "No fields to update", errors.New("No fields to update"))
+		return custom_error.New(http.StatusBadRequest, "No fields to update", nil)
 	}
 
-    if err := r.client.Update(ctx, "projects", post.ID, updates); err != nil {
-        return custom_error.New(http.StatusInternalServerError, "Failed to update", err)
-    }
+	if err := r.client.Update(ctx, "projects", id, updates); err != nil {
+		return custom_error.New(http.StatusInternalServerError, "Failed to update", err)
+	}
 
 	return nil
 }
@@ -71,4 +58,14 @@ func (r *ProjectRepository) GetProject(ctx context.Context, id string) (*models.
 		return nil, custom_error.New(http.StatusInternalServerError, "Failed to get project", err)
 	}
 	return &proj, nil
+}
+
+func (r *ProjectRepository) DeleteProject(ctx context.Context, id string) error {
+	if err := r.client.Delete(ctx, "projects", id); err != nil {
+		if err == bqclient.ErrNotFound {
+			return custom_error.New(http.StatusNotFound, "Project id not found", err)
+		}
+		return custom_error.New(http.StatusInternalServerError, "Failed to get project", err)
+	}
+	return nil
 }
