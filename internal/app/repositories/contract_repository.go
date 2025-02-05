@@ -93,7 +93,6 @@ func (r *ContractRepository) GetContract(ctx context.Context, id string) (*model
 		}
 		return nil, custom_error.New(http.StatusInternalServerError, "Failed to retrieve contract", err)
 	}
-	fmt.Printf("Raw BigQuery Data: %+v\n", contract)
 
 	return &contract, nil
 }
