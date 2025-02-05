@@ -92,11 +92,7 @@ func (h *ProjectHandlers) UpdateProjectHandler(w http.ResponseWriter, r *http.Re
 }
 
 func (h *ProjectHandlers) DeleteProjectHandler(w http.ResponseWriter, r *http.Request) error {
-	var req models.Project
 	id := chi.URLParam(r, "id")
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return custom_error.New(http.StatusBadRequest, "Invalid request payload", err)
-	}
 	if id == "" {
 		return custom_error.New(http.StatusBadRequest, "Project ID is required", nil)
 	}

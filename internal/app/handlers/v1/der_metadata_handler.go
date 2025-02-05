@@ -29,6 +29,9 @@ func (h *DERMetadataHandlers) CreateDERMetadataHandler(w http.ResponseWriter, r 
 	if req.Type == "" || req.ProjectID == "" || req.NameplateCapacity <= 0 || req.PowerCapacity <= 0 {
 		return custom_error.New(http.StatusBadRequest, "All fields (Type, ProjectID, Type, NameplateCapacity, PowerCapacity) are required", nil)
 	}
+	if !req.Type.IsValid() {
+		return custom_error.New(http.StatusBadRequest, "Invalid DERType. Allowed values: solar, battery, ev", nil)
+	}
 
 	err := h.Repo.CreateDERMetadata(r.Context(), &models.DERMetadata{
 		ID:                uuid.New().String(),
@@ -37,6 +40,7 @@ func (h *DERMetadataHandlers) CreateDERMetadataHandler(w http.ResponseWriter, r 
 		NameplateCapacity: req.NameplateCapacity,
 		PowerCapacity:     req.PowerCapacity,
 	})
+
 	if err != nil {
 		return err
 	}
@@ -78,6 +82,9 @@ func (h *DERMetadataHandlers) UpdateDERMetadataHandler(w http.ResponseWriter, r 
 	}
 	if req.ID != "" {
 		return custom_error.New(http.StatusBadRequest, "Updating der id not allowed", nil)
+	}
+	if req.Type != "" && !req.Type.IsValid() {
+		return custom_error.New(http.StatusBadRequest, "Invalid DERType. Allowed values: solar, battery, ev", nil)
 	}
 	err := h.Repo.UpdateDERMetadata(r.Context(), id, &models.DERMetadata{
 		Type:              req.Type,

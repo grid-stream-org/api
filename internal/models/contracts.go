@@ -17,3 +17,12 @@ const (
 	Inactive ContractStatus = "inactive"
 	Pending  ContractStatus = "pending"
 )
+
+func (s ContractStatus) IsValid() bool {
+	switch s {
+	case Active, Pending, Inactive:
+		return true
+	default:
+		return false
+	}
+}

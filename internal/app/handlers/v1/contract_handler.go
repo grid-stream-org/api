@@ -30,7 +30,9 @@ func (h *ContractHandlers) CreateContractHandler(w http.ResponseWriter, r *http.
 	if req.ContractThreshold <= 0 || req.ProjectID == "" || !req.EndDate.Valid || !req.StartDate.Valid || req.Status == "" {
 		return custom_error.New(http.StatusBadRequest, "All fields (contract threshold, start date, end date, projectID, status) are required", nil)
 	}
-
+    if !req.Status.IsValid() {
+        return custom_error.New(http.StatusBadRequest, "Invalid status must be active, inactive or pending", nil)
+    }
 	err := h.Repo.CreateContract(r.Context(), &models.Contract{
 		ID:                uuid.New().String(),
 		ContractThreshold: req.ContractThreshold,
@@ -82,6 +84,9 @@ func (h *ContractHandlers) UpdateContractHandler(w http.ResponseWriter, r *http.
 	if req.ID != "" {
 		return custom_error.New(http.StatusBadRequest, "Updating contract id not allowed", nil)
 	}
+    if req.Status != "" && !req.Status.IsValid() {
+        return custom_error.New(http.StatusBadRequest, "Invalid status must be active, inactive or pending", nil)
+    }
 	err := h.Repo.UpdateContract(r.Context(), id, &models.Contract{
 		ContractThreshold: req.ContractThreshold,
 		StartDate:         req.StartDate,

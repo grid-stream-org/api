@@ -38,7 +38,7 @@ func (r *DERMetadataRepository) CreateDERMetadata(ctx context.Context, data *mod
 
         SET inserted = EXISTS(
             SELECT 1
-            FROM gridstream_operations.contracts c
+            FROM gridstream_operations.der_metadata c
             WHERE c.id = @id
         );
         SELECT inserted AS inserted;`
