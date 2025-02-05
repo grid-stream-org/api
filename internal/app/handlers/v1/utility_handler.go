@@ -12,19 +12,26 @@ import (
 	"github.com/grid-stream-org/api/internal/models"
 )
 
-type UtilityHandler struct {
-	Repo   *repositories.UtilityRepository
+type UtilityHandler interface {
+	CreateUtilityHandler(w http.ResponseWriter, r *http.Request) error
+	GetUtilityHandler(w http.ResponseWriter, r *http.Request) error
+	UpdateUtilityHandler(w http.ResponseWriter, r *http.Request) error
+	DeleteUtilityHandler(w http.ResponseWriter, r *http.Request) error
+}
+
+type utilityHandler struct {
+	Repo   repositories.UtilityRepository
 	logger *slog.Logger
 }
 
-func NewUtilityRepository(repo *repositories.UtilityRepository, logger *slog.Logger) *UtilityHandler {
-	return &UtilityHandler{
+func NewUtilityRepository(repo repositories.UtilityRepository, logger *slog.Logger) UtilityHandler {
+	return &utilityHandler{
 		Repo:   repo,
 		logger: logger,
 	}
 }
 
-func (handler *UtilityHandler) GetUtilityHandler(w http.ResponseWriter, r *http.Request) error {
+func (handler *utilityHandler) GetUtilityHandler(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
 	if id == "" {
 		return custom_error.New(http.StatusBadRequest, "ID is required", errors.New("ID is required"))
@@ -47,7 +54,7 @@ func (handler *UtilityHandler) GetUtilityHandler(w http.ResponseWriter, r *http.
 	return nil
 }
 
-func (handler *UtilityHandler) CreateUtilityHandler(w http.ResponseWriter, r *http.Request) error {
+func (handler *utilityHandler) CreateUtilityHandler(w http.ResponseWriter, r *http.Request) error {
 	var req models.Utility
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return custom_error.New(http.StatusBadRequest, "Invalid request payload", err)
@@ -64,7 +71,7 @@ func (handler *UtilityHandler) CreateUtilityHandler(w http.ResponseWriter, r *ht
 	return nil
 }
 
-func (handler *UtilityHandler) UpdateUtilityHandler(w http.ResponseWriter, r *http.Request) error {
+func (handler *utilityHandler) UpdateUtilityHandler(w http.ResponseWriter, r *http.Request) error {
 	var req models.Utility
 	id := chi.URLParam(r, "id")
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -88,7 +95,7 @@ func (handler *UtilityHandler) UpdateUtilityHandler(w http.ResponseWriter, r *ht
 	return nil
 }
 
-func (handler *UtilityHandler) DeleteUtilityHandler(w http.ResponseWriter, r *http.Request) error {
+func (handler *utilityHandler) DeleteUtilityHandler(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
 
 	if id == "" {

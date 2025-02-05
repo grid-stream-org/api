@@ -15,15 +15,22 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-type ContractRepository struct {
+type ContractRepository interface {
+	CreateContract(ctx context.Context, data *models.Contract) error
+	GetContract(ctx context.Context, id string) (*models.Contract, error)
+	UpdateContract(ctx context.Context, id string, data *models.Contract) error
+	DeleteContract(ctx context.Context, id string) error
+}
+
+type contractRepository struct {
 	client bqclient.BQClient
 }
 
-func NewContractRepository(client bqclient.BQClient, log *slog.Logger) *ContractRepository {
-	return &ContractRepository{client: client}
+func NewContractRepository(client bqclient.BQClient, log *slog.Logger) ContractRepository {
+	return &contractRepository{client: client}
 }
 
-func (r *ContractRepository) CreateContract(ctx context.Context, data *models.Contract) error {
+func (r *contractRepository) CreateContract(ctx context.Context, data *models.Contract) error {
 	query := `
         DECLARE inserted BOOL DEFAULT FALSE;
 
@@ -85,7 +92,7 @@ func (r *ContractRepository) CreateContract(ctx context.Context, data *models.Co
 	return nil
 }
 
-func (r *ContractRepository) GetContract(ctx context.Context, id string) (*models.Contract, error) {
+func (r *contractRepository) GetContract(ctx context.Context, id string) (*models.Contract, error) {
 	var contract models.Contract
 	if err := r.client.Get(ctx, "contracts", id, &contract); err != nil {
 		if err == bqclient.ErrNotFound {
@@ -97,7 +104,7 @@ func (r *ContractRepository) GetContract(ctx context.Context, id string) (*model
 	return &contract, nil
 }
 
-func (r *ContractRepository) UpdateContract(ctx context.Context, id string, data *models.Contract) error {
+func (r *contractRepository) UpdateContract(ctx context.Context, id string, data *models.Contract) error {
 	updates := logic.ExtractBody(data)
 
 	if len(updates) == 0 {
@@ -111,7 +118,7 @@ func (r *ContractRepository) UpdateContract(ctx context.Context, id string, data
 	return nil
 }
 
-func (r *ContractRepository) DeleteContract(ctx context.Context, id string) error {
+func (r *contractRepository) DeleteContract(ctx context.Context, id string) error {
 	if err := r.client.Delete(ctx, "contracts", id); err != nil {
 		if err == bqclient.ErrNotFound {
 			return custom_error.New(http.StatusNotFound, "contract id not found", err)

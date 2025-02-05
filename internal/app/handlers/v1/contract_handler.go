@@ -12,16 +12,23 @@ import (
 	"github.com/grid-stream-org/api/internal/models"
 )
 
-type ContractHandlers struct {
-	Repo *repositories.ContractRepository
+type ContractHandler interface {
+	CreateContractHandler(w http.ResponseWriter, r *http.Request) error
+	GetContractHandler(w http.ResponseWriter, r *http.Request) error
+	UpdateContractHandler(w http.ResponseWriter, r *http.Request) error
+	DeleteContractHandler(w http.ResponseWriter, r *http.Request) error
+}
+
+type contractHandler struct {
+	Repo repositories.ContractRepository
 	Log  *slog.Logger
 }
 
-func NewContractHandlers(repo *repositories.ContractRepository, log *slog.Logger) *ContractHandlers {
-	return &ContractHandlers{Repo: repo, Log: log}
+func NewContractHandlers(repo repositories.ContractRepository, log *slog.Logger) ContractHandler {
+	return &contractHandler{Repo: repo, Log: log}
 }
 
-func (h *ContractHandlers) CreateContractHandler(w http.ResponseWriter, r *http.Request) error {
+func (h *contractHandler) CreateContractHandler(w http.ResponseWriter, r *http.Request) error {
 	var req models.Contract
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return custom_error.New(http.StatusBadRequest, "Invalid request payload", err)
@@ -30,9 +37,9 @@ func (h *ContractHandlers) CreateContractHandler(w http.ResponseWriter, r *http.
 	if req.ContractThreshold <= 0 || req.ProjectID == "" || !req.EndDate.Valid || !req.StartDate.Valid || req.Status == "" {
 		return custom_error.New(http.StatusBadRequest, "All fields (contract threshold, start date, end date, projectID, status) are required", nil)
 	}
-    if !req.Status.IsValid() {
-        return custom_error.New(http.StatusBadRequest, "Invalid status must be active, inactive or pending", nil)
-    }
+	if !req.Status.IsValid() {
+		return custom_error.New(http.StatusBadRequest, "Invalid status must be active, inactive or pending", nil)
+	}
 	err := h.Repo.CreateContract(r.Context(), &models.Contract{
 		ID:                uuid.New().String(),
 		ContractThreshold: req.ContractThreshold,
@@ -48,7 +55,7 @@ func (h *ContractHandlers) CreateContractHandler(w http.ResponseWriter, r *http.
 	return nil
 }
 
-func (h *ContractHandlers) GetContractHandler(w http.ResponseWriter, r *http.Request) error {
+func (h *contractHandler) GetContractHandler(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
 
 	if id == "" {
@@ -68,8 +75,7 @@ func (h *ContractHandlers) GetContractHandler(w http.ResponseWriter, r *http.Req
 	return nil
 }
 
-func (h *ContractHandlers) UpdateContractHandler(w http.ResponseWriter, r *http.Request) error {
-
+func (h *contractHandler) UpdateContractHandler(w http.ResponseWriter, r *http.Request) error {
 	var req models.Contract
 	id := chi.URLParam(r, "id")
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -84,9 +90,9 @@ func (h *ContractHandlers) UpdateContractHandler(w http.ResponseWriter, r *http.
 	if req.ID != "" {
 		return custom_error.New(http.StatusBadRequest, "Updating contract id not allowed", nil)
 	}
-    if req.Status != "" && !req.Status.IsValid() {
-        return custom_error.New(http.StatusBadRequest, "Invalid status must be active, inactive or pending", nil)
-    }
+	if req.Status != "" && !req.Status.IsValid() {
+		return custom_error.New(http.StatusBadRequest, "Invalid status must be active, inactive or pending", nil)
+	}
 	err := h.Repo.UpdateContract(r.Context(), id, &models.Contract{
 		ContractThreshold: req.ContractThreshold,
 		StartDate:         req.StartDate,
@@ -101,13 +107,13 @@ func (h *ContractHandlers) UpdateContractHandler(w http.ResponseWriter, r *http.
 	return nil
 }
 
-func (handler *ContractHandlers) DeleteContractHandler(w http.ResponseWriter, r *http.Request) error {
+func (h *contractHandler) DeleteContractHandler(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
 
 	if id == "" {
 		return custom_error.New(http.StatusBadRequest, "Contract ID required", nil)
 	}
-	if err := handler.Repo.DeleteContract(r.Context(), id); err != nil {
+	if err := h.Repo.DeleteContract(r.Context(), id); err != nil {
 		return err
 	}
 	w.WriteHeader(http.StatusOK)

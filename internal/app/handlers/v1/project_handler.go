@@ -13,19 +13,26 @@ import (
 	"github.com/grid-stream-org/api/internal/models"
 )
 
+type ProjectHandlers interface {
+	CreateProjectHandler(w http.ResponseWriter, r *http.Request) error
+	GetProjectHandler(w http.ResponseWriter, r *http.Request) error
+	UpdateProjectHandler(w http.ResponseWriter, r *http.Request) error
+	DeleteProjectHandler(w http.ResponseWriter, r *http.Request) error
+}
+
 // ProjectHandlers contains the repository and logger
-type ProjectHandlers struct {
-	Repo *repositories.ProjectRepository
+type projectHandlers struct {
+	Repo repositories.ProjectRepository
 	Log  *slog.Logger
 }
 
 // NewProjectHandlers creates a new instance of ProjectHandlers
-func NewProjectHandlers(repo *repositories.ProjectRepository, log *slog.Logger) *ProjectHandlers {
-	return &ProjectHandlers{Repo: repo, Log: log}
+func NewProjectHandlers(repo repositories.ProjectRepository, log *slog.Logger) ProjectHandlers {
+	return &projectHandlers{Repo: repo, Log: log}
 }
 
 // GetProjectHandler handles retrieving a project by ID
-func (h *ProjectHandlers) GetProjectHandler(w http.ResponseWriter, r *http.Request) error {
+func (h *projectHandlers) GetProjectHandler(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id") // Get the project ID from the URL
 
 	project, err := h.Repo.GetProject(r.Context(), id)
@@ -43,7 +50,7 @@ func (h *ProjectHandlers) GetProjectHandler(w http.ResponseWriter, r *http.Reque
 	return nil
 }
 
-func (h *ProjectHandlers) CreateProjectHandler(w http.ResponseWriter, r *http.Request) error {
+func (h *projectHandlers) CreateProjectHandler(w http.ResponseWriter, r *http.Request) error {
 
 	var req models.Project
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -65,7 +72,7 @@ func (h *ProjectHandlers) CreateProjectHandler(w http.ResponseWriter, r *http.Re
 	return nil
 }
 
-func (h *ProjectHandlers) UpdateProjectHandler(w http.ResponseWriter, r *http.Request) error {
+func (h *projectHandlers) UpdateProjectHandler(w http.ResponseWriter, r *http.Request) error {
 	var req models.Project
 	id := chi.URLParam(r, "id")
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -91,7 +98,7 @@ func (h *ProjectHandlers) UpdateProjectHandler(w http.ResponseWriter, r *http.Re
 	return nil
 }
 
-func (h *ProjectHandlers) DeleteProjectHandler(w http.ResponseWriter, r *http.Request) error {
+func (h *projectHandlers) DeleteProjectHandler(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
 	if id == "" {
 		return custom_error.New(http.StatusBadRequest, "Project ID is required", nil)

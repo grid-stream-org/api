@@ -20,6 +20,7 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/matthew-collett/go-ctag v1.0.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

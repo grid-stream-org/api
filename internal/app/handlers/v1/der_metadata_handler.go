@@ -12,16 +12,22 @@ import (
 	"github.com/grid-stream-org/api/internal/models"
 )
 
-type DERMetadataHandlers struct {
-	Repo *repositories.DERMetadataRepository
+type DERMetadataHandlers interface {
+	CreateDERMetadataHandler(w http.ResponseWriter, r *http.Request) error
+	GetDERMetadataHandler(w http.ResponseWriter, r *http.Request) error
+	UpdateDERMetadataHandler(w http.ResponseWriter, r *http.Request) error
+	DeleteDERMetadataHandler(w http.ResponseWriter, r *http.Request) error
+}
+type derMetadataHandlers struct {
+	Repo repositories.DERMetadataRepository
 	Log  *slog.Logger
 }
 
-func NewDERMetadataHandlers(repo *repositories.DERMetadataRepository, log *slog.Logger) *DERMetadataHandlers {
-	return &DERMetadataHandlers{Repo: repo, Log: log}
+func NewDERMetadataHandlers(repo repositories.DERMetadataRepository, log *slog.Logger) DERMetadataHandlers {
+	return &derMetadataHandlers{Repo: repo, Log: log}
 }
 
-func (h *DERMetadataHandlers) CreateDERMetadataHandler(w http.ResponseWriter, r *http.Request) error {
+func (h *derMetadataHandlers) CreateDERMetadataHandler(w http.ResponseWriter, r *http.Request) error {
 	var req models.DERMetadata
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return custom_error.New(http.StatusBadRequest, "Invalid request payload", err)
@@ -48,7 +54,7 @@ func (h *DERMetadataHandlers) CreateDERMetadataHandler(w http.ResponseWriter, r 
 	return nil
 }
 
-func (h *DERMetadataHandlers) GetDERMetadataHandler(w http.ResponseWriter, r *http.Request) error {
+func (h *derMetadataHandlers) GetDERMetadataHandler(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
 
 	if id == "" {
@@ -68,7 +74,7 @@ func (h *DERMetadataHandlers) GetDERMetadataHandler(w http.ResponseWriter, r *ht
 	return nil
 }
 
-func (h *DERMetadataHandlers) UpdateDERMetadataHandler(w http.ResponseWriter, r *http.Request) error {
+func (h *derMetadataHandlers) UpdateDERMetadataHandler(w http.ResponseWriter, r *http.Request) error {
 	var req models.DERMetadata
 	id := chi.URLParam(r, "id")
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -99,7 +105,7 @@ func (h *DERMetadataHandlers) UpdateDERMetadataHandler(w http.ResponseWriter, r 
 	return nil
 }
 
-func (handler *DERMetadataHandlers) DeleteDERMetadataHandler(w http.ResponseWriter, r *http.Request) error {
+func (handler *derMetadataHandlers) DeleteDERMetadataHandler(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
 	if id == "" {
 		return custom_error.New(http.StatusBadRequest, "Contract ID required", nil)

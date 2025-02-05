@@ -14,15 +14,21 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-type DERMetadataRepository struct {
+type DERMetadataRepository interface {
+	CreateDERMetadata(ctx context.Context, data *models.DERMetadata) error
+	GetDERMetadata(ctx context.Context, id string) (*models.DERMetadata, error)
+	UpdateDERMetadata(ctx context.Context, id string, data *models.DERMetadata) error
+	DeleteDERMetadata(ctx context.Context, id string) error
+}
+type derMetadataRepository struct {
 	client bqclient.BQClient
 }
 
-func NewDERMetadataRepository(client bqclient.BQClient, log *slog.Logger) *DERMetadataRepository {
-	return &DERMetadataRepository{client: client}
+func NewDERMetadataRepository(client bqclient.BQClient, log *slog.Logger) DERMetadataRepository {
+	return &derMetadataRepository{client: client}
 }
 
-func (r *DERMetadataRepository) CreateDERMetadata(ctx context.Context, data *models.DERMetadata) error {
+func (r *derMetadataRepository) CreateDERMetadata(ctx context.Context, data *models.DERMetadata) error {
 	query := `
         DECLARE inserted BOOL DEFAULT FALSE;
 
@@ -82,7 +88,7 @@ func (r *DERMetadataRepository) CreateDERMetadata(ctx context.Context, data *mod
 	return nil
 }
 
-func (r *DERMetadataRepository) GetDERMetadata(ctx context.Context, id string) (*models.DERMetadata, error) {
+func (r *derMetadataRepository) GetDERMetadata(ctx context.Context, id string) (*models.DERMetadata, error) {
 	var derMetadata models.DERMetadata
 	if err := r.client.Get(ctx, "der_metadata", id, &derMetadata); err != nil {
 		if err == bqclient.ErrNotFound {
@@ -94,7 +100,7 @@ func (r *DERMetadataRepository) GetDERMetadata(ctx context.Context, id string) (
 	return &derMetadata, nil
 }
 
-func (r *DERMetadataRepository) UpdateDERMetadata(ctx context.Context, id string, data *models.DERMetadata) error {
+func (r *derMetadataRepository) UpdateDERMetadata(ctx context.Context, id string, data *models.DERMetadata) error {
 	updates := logic.ExtractBody(data)
 
 	if len(updates) == 0 {
@@ -108,7 +114,7 @@ func (r *DERMetadataRepository) UpdateDERMetadata(ctx context.Context, id string
 	return nil
 }
 
-func (r *DERMetadataRepository) DeleteDERMetadata(ctx context.Context, id string) error {
+func (r *derMetadataRepository) DeleteDERMetadata(ctx context.Context, id string) error {
 	if err := r.client.Delete(ctx, "der_metadata", id); err != nil {
 		if err == bqclient.ErrNotFound {
 			return custom_error.New(http.StatusNotFound, "der id not found", err)

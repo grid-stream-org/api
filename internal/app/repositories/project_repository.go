@@ -17,15 +17,22 @@ import (
 	"github.com/grid-stream-org/batcher/pkg/bqclient"
 )
 
-type ProjectRepository struct {
+type ProjectRepository interface {
+	CreateProject(ctx context.Context, data *models.Project) error
+	GetProject(ctx context.Context, id string) (*models.Project, error)
+	UpdateProject(ctx context.Context, id string, data *models.Project) error
+	DeleteProject(ctx context.Context, id string) error
+}
+
+type projectRepository struct {
 	client bqclient.BQClient
 }
 
-func NewProjectRepository(client bqclient.BQClient, log *slog.Logger) *ProjectRepository {
-	return &ProjectRepository{client: client}
+func NewProjectRepository(client bqclient.BQClient, log *slog.Logger) ProjectRepository {
+	return &projectRepository{client: client}
 }
 
-func (r *ProjectRepository) CreateProject(ctx context.Context, post *models.Project) error {
+func (r *projectRepository) CreateProject(ctx context.Context, post *models.Project) error {
 
 	if err := r.client.Put(ctx, "projects", post); err != nil {
 		return custom_error.New(http.StatusInternalServerError, "Failed to create project", err)
@@ -34,7 +41,7 @@ func (r *ProjectRepository) CreateProject(ctx context.Context, post *models.Proj
 	return nil
 }
 
-func (r *ProjectRepository) UpdateProject(ctx context.Context, id string, post *models.Project) error {
+func (r *projectRepository) UpdateProject(ctx context.Context, id string, post *models.Project) error {
 
 	updates := logic.ExtractBody(post)
 
@@ -49,7 +56,7 @@ func (r *ProjectRepository) UpdateProject(ctx context.Context, id string, post *
 	return nil
 }
 
-func (r *ProjectRepository) GetProject(ctx context.Context, id string) (*models.Project, error) {
+func (r *projectRepository) GetProject(ctx context.Context, id string) (*models.Project, error) {
 	var proj models.Project
 	if err := r.client.Get(ctx, "projects", id, &proj); err != nil {
 		if err == bqclient.ErrNotFound {
@@ -60,7 +67,7 @@ func (r *ProjectRepository) GetProject(ctx context.Context, id string) (*models.
 	return &proj, nil
 }
 
-func (r *ProjectRepository) DeleteProject(ctx context.Context, id string) error {
+func (r *projectRepository) DeleteProject(ctx context.Context, id string) error {
 	if err := r.client.Delete(ctx, "projects", id); err != nil {
 		if err == bqclient.ErrNotFound {
 			return custom_error.New(http.StatusNotFound, "Project id not found", err)
