@@ -7,7 +7,7 @@ toolchain go1.23.3
 require (
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-chi/cors v1.2.1
-	github.com/grid-stream-org/batcher v0.1.2-0.20250124160101-8a9e632dd2a9
+	github.com/grid-stream-org/batcher v0.2.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/stretchr/testify v1.10.0
 )
@@ -20,6 +20,7 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/matthew-collett/go-ctag v1.0.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
@@ -28,7 +29,7 @@ require (
 	cloud.google.com/go v0.116.0 // indirect
 	cloud.google.com/go/auth v0.13.0 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.6 // indirect
-	cloud.google.com/go/bigquery v1.65.0 // indirect
+	cloud.google.com/go/bigquery v1.65.0
 	cloud.google.com/go/compute/metadata v0.6.0 // indirect
 	cloud.google.com/go/iam v1.2.2 // indirect
 	firebase.google.com/go v3.13.0+incompatible

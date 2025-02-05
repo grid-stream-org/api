@@ -42,6 +42,7 @@ func run(ctx context.Context, w io.Writer, args []string) error {
     if err != nil {
         return errors.Wrap(err, "failed to init big query client")
     }
+    defer bqClient.Close()
 
 	// Initialize Firebase Auth client
 	firebaseAuth, err := firebase.InitializeFirebaseClient(ctx, cfg, log)

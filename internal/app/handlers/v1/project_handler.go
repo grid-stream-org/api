@@ -1,9 +1,7 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 
 	"log/slog"
@@ -15,22 +13,29 @@ import (
 	"github.com/grid-stream-org/api/internal/models"
 )
 
+type ProjectHandlers interface {
+	CreateProjectHandler(w http.ResponseWriter, r *http.Request) error
+	GetProjectHandler(w http.ResponseWriter, r *http.Request) error
+	UpdateProjectHandler(w http.ResponseWriter, r *http.Request) error
+	DeleteProjectHandler(w http.ResponseWriter, r *http.Request) error
+}
+
 // ProjectHandlers contains the repository and logger
-type ProjectHandlers struct {
-	Repo *repositories.ProjectRepository
+type projectHandlers struct {
+	Repo repositories.ProjectRepository
 	Log  *slog.Logger
 }
 
 // NewProjectHandlers creates a new instance of ProjectHandlers
-func NewProjectHandlers(repo *repositories.ProjectRepository, log *slog.Logger) *ProjectHandlers {
-	return &ProjectHandlers{Repo: repo, Log: log}
+func NewProjectHandlers(repo repositories.ProjectRepository, log *slog.Logger) ProjectHandlers {
+	return &projectHandlers{Repo: repo, Log: log}
 }
 
 // GetProjectHandler handles retrieving a project by ID
-func (h *ProjectHandlers) GetProjectHandler(w http.ResponseWriter, r *http.Request) error {
+func (h *projectHandlers) GetProjectHandler(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id") // Get the project ID from the URL
 
-	project, err := h.Repo.GetProject(context.Background(), id)
+	project, err := h.Repo.GetProject(r.Context(), id)
 	if err != nil {
 		return err
 	}
@@ -41,22 +46,23 @@ func (h *ProjectHandlers) GetProjectHandler(w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		return err
 	}
+	w.WriteHeader(http.StatusOK)
 	return nil
 }
 
-func (h *ProjectHandlers) CreateProjectHandler(w http.ResponseWriter, r *http.Request) error {
+func (h *projectHandlers) CreateProjectHandler(w http.ResponseWriter, r *http.Request) error {
 
 	var req models.Project
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return custom_error.New(http.StatusBadRequest, "Invalid request payload", err)
 	}
-	if req.UtilityID == "" || req.UserID == "" || req.Location == "" {
-		return custom_error.New(http.StatusBadRequest, "All fields (utilityId, userId, location) are required", errors.New("Fields not provided"))
+	if req.UtilityID == "" || req.Location == "" {
+		return custom_error.New(http.StatusBadRequest, "All fields (utilityId, userId, location) are required", nil)
 	}
 	err := h.Repo.CreateProject(r.Context(), &models.Project{
 		ID:        uuid.New().String(),
 		UtilityID: req.UtilityID,
-		UserID:    req.UserID,
+		UserID:    "",
 		Location:  req.Location,
 	})
 	if err != nil {
@@ -66,17 +72,20 @@ func (h *ProjectHandlers) CreateProjectHandler(w http.ResponseWriter, r *http.Re
 	return nil
 }
 
-func (h *ProjectHandlers) UpdateProjectHandler(w http.ResponseWriter, r *http.Request) error {
+func (h *projectHandlers) UpdateProjectHandler(w http.ResponseWriter, r *http.Request) error {
 	var req models.Project
 	id := chi.URLParam(r, "id")
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return custom_error.New(http.StatusBadRequest, "Invalid request payload", err)
 	}
 	if id == "" {
-		return custom_error.New(http.StatusBadRequest, "Project ID is required", errors.New("no request ID provided"))
+		return custom_error.New(http.StatusBadRequest, "Project ID is required", nil)
 	}
-	err := h.Repo.UpdateProject(r.Context(), &models.Project{
-		ID:        id,
+
+	if req.ID != "" {
+		return custom_error.New(http.StatusBadRequest, "Updating project id is not allowed", nil)
+	}
+	err := h.Repo.UpdateProject(r.Context(), id, &models.Project{
 		UtilityID: req.UtilityID,
 		UserID:    req.UserID,
 		Location:  req.Location,
@@ -85,5 +94,20 @@ func (h *ProjectHandlers) UpdateProjectHandler(w http.ResponseWriter, r *http.Re
 	if err != nil {
 		return err
 	}
+	w.WriteHeader(http.StatusOK)
+	return nil
+}
+
+func (h *projectHandlers) DeleteProjectHandler(w http.ResponseWriter, r *http.Request) error {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		return custom_error.New(http.StatusBadRequest, "Project ID is required", nil)
+	}
+	err := h.Repo.DeleteProject(r.Context(), id)
+
+	if err != nil {
+		return err
+	}
+	w.WriteHeader(http.StatusOK)
 	return nil
 }
