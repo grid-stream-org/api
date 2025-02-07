@@ -38,14 +38,5 @@ jobs:
             --platform managed \
             --region ${{ secrets.GCP_REGION }} \
             --no-allow-unauthenticated \
-            --set-env-vars GO_ENV=production \
-            --set-env-vars PORT=8080 \
-            --set-env-vars OUTPUT=stdout \
-            --set-env-vars LEVEL=INFO \
-            --set-env-vars FORMAT=JSON \
-            --set-env-vars FIREBASE_GOOGLE_CREDENTIAL=${{ secrets.FIREBASE_GOOGLE_CREDENTIAL }} \
-            --set-env-vars CREDS_PATH=${{ secrets.CREDS_PATH }} \
-            --set-env-vars FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }} \
-            --set-env-vars ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }} \
-            --set-secrets=${{ secrets.CREDS_PATH }}=CREDS_PATH:1 \
-            --set-secrets=${{ secrets.FIREBASE_GOOGLE_CREDENTIAL }}=FIREBASE_GOOGLE_CREDENTIAL:1
+            --set-env-vars=GO_ENV=production,PORT=8080,OUTPUT=stdout,LEVEL=INFO,FORMAT=JSON,FIREBASE_GOOGLE_CREDENTIAL=${{ secrets.FIREBASE_GOOGLE_CREDENTIAL }},CREDS_PATH=${{ secrets.CREDS_PATH }},FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }},ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }} \
+            --set-secrets=${{ secrets.CREDS_PATH }}=CREDS_PATH:1,${{ secrets.FIREBASE_GOOGLE_CREDENTIAL }}=FIREBASE_GOOGLE_CREDENTIAL:1
