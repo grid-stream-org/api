@@ -21,7 +21,7 @@ type Config struct {
 
 type FirebaseConfig struct {
 	ProjectID        string `envconfig:"FIREBASE_PROJECT_ID"`
-	GoogleCredential string
+	GoogleCredential string `envconfig:"FIREBASE_GOOGLE_CREDENTIAL"`
 }
 
 func Load() (*Config, error) {
@@ -40,15 +40,14 @@ func Load() (*Config, error) {
 		return nil, errors.WithStack(err)
 	}
 
-	// Load Firebase credentials
-	if isProduction {
-		// mount secret
-		cfg.Firebase.GoogleCredential = "/secrets/firebase.json"
-		cfg.Port = 8080
-	} else {
-		// .env for local development
-		cfg.Firebase.GoogleCredential = os.Getenv("FIREBASE_GOOGLE_CREDENTIAL")
-	}
+	// // Load Firebase credentials
+	// if isProduction {
+	// 	// mount secret
+	// 	cfg.Firebase.GoogleCredential = "/secrets/firebase.json"
+	// } else {
+	// 	// .env for local development
+	// 	cfg.Firebase.GoogleCredential = os.Getenv("FIREBASE_GOOGLE_CREDENTIAL")
+	// }
 
 	// Ensure Firebase credentials file exists
 	if _, err := os.Stat(cfg.Firebase.GoogleCredential); os.IsNotExist(err) {
