@@ -44,6 +44,7 @@ func Load() (*Config, error) {
 	if isProduction {
 		// mount secret
 		cfg.Firebase.GoogleCredential = "/secrets/firebase.json"
+		cfg.Port = 8080
 	} else {
 		// .env for local development
 		cfg.Firebase.GoogleCredential = os.Getenv("FIREBASE_GOOGLE_CREDENTIAL")
