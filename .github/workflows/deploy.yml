@@ -2,7 +2,8 @@ name: Deploy to Cloud Run
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -11,7 +12,6 @@ jobs:
   deploy:
     name: Build & Deploy to Cloud Run
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -24,7 +24,7 @@ jobs:
       - name: Configure gcloud
         run: |
           gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
-          gcloud auth configure-docker us-docker.pkg.dev 
+          gcloud auth configure-docker us-docker.pkg.dev
 
       - name: Build and Push Docker Image
         run: |
@@ -47,5 +47,5 @@ jobs:
             --set-env-vars CREDS_PATH=${{ secrets.CREDS_PATH }} \
             --set-env-vars FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }} \
             --set-env-vars ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }} \
-            --set-secrets=${{ secrets.FIREBASE_GOOGLE_CREDENTIAL }}=FIREBASE_GOOGLE_CREDENTIAL:1 \
-            --set-secrets=${{ secrets.CREDS_PATH }}=CREDS_PATH:1
+            --set-secrets=${{ secrets.CREDS_PATH }}=CREDS_PATH:1 \
+            --set-secrets=${{ secrets.FIREBASE_GOOGLE_CREDENTIAL }}=FIREBASE_GOOGLE_CREDENTIAL:1
