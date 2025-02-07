@@ -39,7 +39,6 @@ jobs:
             --region ${{ secrets.GCP_REGION }} \
             --no-allow-unauthenticated \
             --set-env-vars GO_ENV=production \
-            --set-env-vars FIREBASE_PROJECT_ID=$(gcloud secrets versions access latest --secret=FIREBASE_PROJECT_ID) \
-            --set-env-vars CREDS_PATH=$(gcloud secrets versions access latest --secret=CREDS_PATH) \
-            --update-secrets FIREBASE_GOOGLE_CREDENTIAL=latest:/secrets/firebase.json
-
+            --set-env-vars FIREBASE_PROJECT_ID=projects/${{ secrets.GCP_PROJECT_ID }}/secrets/FIREBASE_PROJECT_ID/versions/latest \
+            --set-env-vars CREDS_PATH=projects/${{ secrets.GCP_PROJECT_ID }}/secrets/CREDS_PATH/versions/latest \
+            --update-secrets=FIREBASE_GOOGLE_CREDENTIAL=FIREBASE_GOOGLE_CREDENTIAL:latest
