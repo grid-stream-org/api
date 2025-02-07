@@ -24,19 +24,6 @@ jobs:
         run: |
           docker build -t us-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gridstream/api .
           docker push us-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gridstream/api
-      - name: Create env.yaml
-        run: |
-          cat > env.yaml << EOF
-          GO_ENV: "production"
-          PORT: "8080"
-          OUTPUT: "stdout"
-          LEVEL: "INFO"
-          FORMAT: "JSON"
-          CREDS_PATH: "/secrets/bigquery.json"
-          FIREBASE_GOOGLE_CREDENTIAL: "/secrets/firebase.json"
-          FIREBASE_PROJECT_ID: "${{ secrets.GH_FIREBASE_PROJECT_ID }}"
-          ALLOWED_ORIGINS: "${{ secrets.GH_ALLOWED_ORIGINS }}"
-          EOF
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy gridstream-api \
@@ -44,5 +31,5 @@ jobs:
             --platform managed \
             --region ${{ secrets.GCP_REGION }} \
             --no-allow-unauthenticated \
-            --env-vars-file env.yaml \
+            --set-env-vars=GO_ENV=production,PORT=8080,OUTPUT=stdout,LEVEL=INFO,FORMAT=JSON,FIREBASE_PROJECT_ID=${{ secrets.GH_FIREBASE_PROJECT_ID }},ALLOWED_ORIGINS=${{ secrets.GH_ALLOWED_ORIGINS }},CREDS_PATH=/secrets/bigquery.json,FIREBASE_GOOGLE_CREDENTIAL=/secrets/firebase.json \
             --set-secrets=/secrets/bigquery.json=CREDS_PATH_SECRET:1,/secrets/firebase.json=FIREBASE_GOOGLE_CREDENTIAL_SECRET:1
