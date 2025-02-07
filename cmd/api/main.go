@@ -29,7 +29,7 @@ func run(ctx context.Context, w io.Writer, args []string) error {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
-	cfg, err := config.Load(false)
+	cfg, err := config.Load()
 	if err != nil {
 		return errors.Wrap(err, "loading conf")
 	}
