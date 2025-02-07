@@ -34,7 +34,7 @@ jobs:
             --set-env-vars "GO_ENV=production" \
             --set-env-vars "OUTPUT=stdout" \
             --set-env-vars "LEVEL=INFO" \
-            --set-env-vars "FORMAT=JSON" \
+            --set-env-vars "FORMAT="json" \
             --set-env-vars "FIREBASE_PROJECT_ID=${{ secrets.GH_FIREBASE_PROJECT_ID }}" \
             --set-env-vars "^@^ALLOWED_ORIGINS=${{ secrets.GH_ALLOWED_ORIGINS }}" \
             --set-env-vars "CREDS_PATH=/secrets/bigquery/credentials.json" \
