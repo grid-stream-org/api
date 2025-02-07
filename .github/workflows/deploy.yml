@@ -1,13 +1,10 @@
 name: deploy
-
 on:
   push:
     branches:
       - main
-
 permissions:
   contents: read
-
 jobs:
   deploy:
     name: Build & Deploy to Cloud Run
@@ -15,22 +12,18 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
       - name: Authenticate with Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACC_KEY }}
-
       - name: Configure gcloud
         run: |
           gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
           gcloud auth configure-docker us-docker.pkg.dev
-
       - name: Build and Push Docker Image
         run: |
           docker build -t us-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gridstream/api .
           docker push us-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gridstream/api
-
       - name: Create env.yaml
         run: |
           cat > env.yaml << EOF
@@ -39,12 +32,11 @@ jobs:
           OUTPUT: "stdout"
           LEVEL: "INFO"
           FORMAT: "JSON"
-          FIREBASE_GOOGLE_CREDENTIAL: "${{ secrets.GH_FIREBASE_GOOGLE_CREDENTIAL_PATH }}"
-          CREDS_PATH: "${{ secrets.GH_CREDS_PATH }}"
+          CREDS_PATH: "/secrets/bigquery.json"
+          FIREBASE_GOOGLE_CREDENTIAL: "/secrets/firebase.json"
           FIREBASE_PROJECT_ID: "${{ secrets.GH_FIREBASE_PROJECT_ID }}"
           ALLOWED_ORIGINS: "${{ secrets.GH_ALLOWED_ORIGINS }}"
           EOF
-
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy gridstream-api \
@@ -53,4 +45,4 @@ jobs:
             --region ${{ secrets.GCP_REGION }} \
             --no-allow-unauthenticated \
             --env-vars-file env.yaml \
-            --set-secrets=${{ secrets.GH_CREDS_PATH }}=CREDS_PATH:1,${{ secrets.GH_FIREBASE_GOOGLE_CREDENTIAL_PATH }}=FIREBASE_GOOGLE_CREDENTIAL:1
+            --set-secrets=/secrets/bigquery.json=CREDS_PATH:1,/secrets/firebase.json=FIREBASE_GOOGLE_CREDENTIAL:1
