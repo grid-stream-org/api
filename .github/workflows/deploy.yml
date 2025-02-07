@@ -39,10 +39,10 @@ jobs:
           OUTPUT: "stdout"
           LEVEL: "INFO"
           FORMAT: "JSON"
-          FIREBASE_GOOGLE_CREDENTIAL: "${{ secrets.FIREBASE_GOOGLE_CREDENTIAL }}"
-          CREDS_PATH: "${{ secrets.CREDS_PATH }}"
-          FIREBASE_PROJECT_ID: "${{ secrets.FIREBASE_PROJECT_ID }}"
-          ALLOWED_ORIGINS: "${{ secrets.ALLOWED_ORIGINS }}"
+          FIREBASE_GOOGLE_CREDENTIAL: "${{ secrets.GH_FIREBASE_GOOGLE_CREDENTIAL_PATH }}"
+          CREDS_PATH: "${{ secrets.GH_CREDS_PATH }}"
+          FIREBASE_PROJECT_ID: "${{ secrets.GH_FIREBASE_PROJECT_ID }}"
+          ALLOWED_ORIGINS: "${{ secrets.GH_ALLOWED_ORIGINS }}"
           EOF
 
       - name: Deploy to Cloud Run
@@ -53,4 +53,4 @@ jobs:
             --region ${{ secrets.GCP_REGION }} \
             --no-allow-unauthenticated \
             --env-vars-file env.yaml \
-            --set-secrets=${{ secrets.CREDS_PATH }}=CREDS_PATH:1,${{ secrets.FIREBASE_GOOGLE_CREDENTIAL }}=FIREBASE_GOOGLE_CREDENTIAL:1
+            --set-secrets=${{ secrets.GH_CREDS_PATH }}=CREDS_PATH:1,${{ secrets.GH_FIREBASE_GOOGLE_CREDENTIAL_PATH }}=FIREBASE_GOOGLE_CREDENTIAL:1
