@@ -33,7 +33,7 @@ jobs:
 
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy my-api \
+          gcloud run deploy gridstream-api \
             --image us-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gridstream/api \
             --platform managed \
             --region ${{ secrets.GCP_REGION }} \
@@ -41,5 +41,6 @@ jobs:
             --set-env-vars GO_ENV=production \
             --set-env-vars FIREBASE_PROJECT_ID=$(gcloud secrets versions access latest --secret=FIREBASE_PROJECT_ID) \
             --set-env-vars CREDS_PATH=$(gcloud secrets versions access latest --secret=CREDS_PATH) \
-            --mount-secret=/secrets/firebase.json=FIREBASE_GOOGLE_CREDENTIAL
+            --update-secrets FIREBASE_GOOGLE_CREDENTIAL=latest:/secrets/firebase.json
+
 
