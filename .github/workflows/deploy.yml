@@ -24,17 +24,17 @@ jobs:
       - name: Configure gcloud
         run: |
           gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
-          gcloud auth configure-docker gcr.io
+          gcloud auth configure-docker us-docker.pkg.dev 
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/api .
-          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/api
+          docker build -t us-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gridstream/api .
+          docker push us-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gridstream/api
 
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy my-api \
-            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/api \
+            --image us-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gridstream/api \
             --platform managed \
             --region ${{ secrets.GCP_REGION }} \
             --allow-unauthenticated \
@@ -42,4 +42,3 @@ jobs:
             --set-env-vars FIREBASE_PROJECT_ID=$(gcloud secrets versions access latest --secret=FIREBASE_PROJECT_ID) \
             --set-env-vars FIREBASE_GOOGLE_CREDENTIAL=$(gcloud secrets versions access latest --secret=FIREBASE_GOOGLE_CREDENTIAL) \
             --set-env-vars CREDS_PATH=$(gcloud secrets versions access latest --secret=CREDS_PATH)
-
