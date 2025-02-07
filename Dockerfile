@@ -11,8 +11,12 @@ COPY . .
 
 RUN go build -o main ./cmd/api
 
-# Final lightweight container
 FROM gcr.io/distroless/base-debian11
+
 WORKDIR /
+
 COPY --from=builder /app/main .
+
+EXPOSE 8080
+
 CMD ["/main"]
