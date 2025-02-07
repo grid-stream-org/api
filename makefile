@@ -54,7 +54,7 @@ coverage: ## Run tests with coverage
 	go tool cover -html=coverage.out
 
 docker: ## Build docker image
-	docker build -t $(BINARY) .
+	docker build -t gridstream-api .
 
 docker-run: docker ## Run docker container
 	docker run $(BINARY)
