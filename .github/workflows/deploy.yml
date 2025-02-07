@@ -45,4 +45,4 @@ jobs:
             --region ${{ secrets.GCP_REGION }} \
             --no-allow-unauthenticated \
             --env-vars-file env.yaml \
-            --set-secrets=/secrets/bigquery.json=CREDS_PATH:1,/secrets/firebase.json=FIREBASE_GOOGLE_CREDENTIAL:1
+            --set-secrets=/secrets/bigquery.json=CREDS_PATH_SECRET:1,/secrets/firebase.json=FIREBASE_GOOGLE_CREDENTIAL_SECRET:1
