@@ -31,5 +31,13 @@ jobs:
             --platform managed \
             --region ${{ secrets.GCP_REGION }} \
             --no-allow-unauthenticated \
-            --set-env-vars=GO_ENV=production,PORT=8080,OUTPUT=stdout,LEVEL=INFO,FORMAT=JSON,FIREBASE_PROJECT_ID=${{ secrets.GH_FIREBASE_PROJECT_ID }},ALLOWED_ORIGINS=${{ secrets.GH_ALLOWED_ORIGINS }},CREDS_PATH=/secrets/bigquery.json,FIREBASE_GOOGLE_CREDENTIAL=/secrets/firebase.json \
+            --set-env-vars "GO_ENV=production" \
+            --set-env-vars "PORT=8080" \
+            --set-env-vars "OUTPUT=stdout" \
+            --set-env-vars "LEVEL=INFO" \
+            --set-env-vars "FORMAT=JSON" \
+            --set-env-vars "FIREBASE_PROJECT_ID=${{ secrets.GH_FIREBASE_PROJECT_ID }}" \
+            --set-env-vars "^@^ALLOWED_ORIGINS=${{ secrets.GH_ALLOWED_ORIGINS }}" \
+            --set-env-vars "CREDS_PATH=/secrets/bigquery.json" \
+            --set-env-vars "FIREBASE_GOOGLE_CREDENTIAL=/secrets/firebase.json" \
             --set-secrets=/secrets/bigquery.json=CREDS_PATH_SECRET:1,/secrets/firebase.json=FIREBASE_GOOGLE_CREDENTIAL_SECRET:1
