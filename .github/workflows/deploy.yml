@@ -43,4 +43,3 @@ jobs:
             --set-env-vars CREDS_PATH=$(gcloud secrets versions access latest --secret=CREDS_PATH) \
             --update-secrets FIREBASE_GOOGLE_CREDENTIAL=latest:/secrets/firebase.json
 
-
