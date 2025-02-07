@@ -9,8 +9,7 @@ RUN go mod download
 # Copy source code and build the app
 COPY . .
 
-RUN go build -o ./cmd/api .
-
+RUN go build -o ./cmd/main .
 
 # Final lightweight container
 FROM gcr.io/distroless/base-debian11
