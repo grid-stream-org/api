@@ -34,15 +34,15 @@ jobs:
       - name: Create env.yaml
         run: |
           cat > env.yaml << EOF
-          GO_ENV: production
-          PORT: 8080
-          OUTPUT: stdout
-          LEVEL: INFO
-          FORMAT: JSON
-          FIREBASE_GOOGLE_CREDENTIAL: ${{ secrets.FIREBASE_GOOGLE_CREDENTIAL }}
-          CREDS_PATH: ${{ secrets.CREDS_PATH }}
-          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-          ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
+          GO_ENV: "production"
+          PORT: "8080"
+          OUTPUT: "stdout"
+          LEVEL: "INFO"
+          FORMAT: "JSON"
+          FIREBASE_GOOGLE_CREDENTIAL: "${{ secrets.FIREBASE_GOOGLE_CREDENTIAL }}"
+          CREDS_PATH: "${{ secrets.CREDS_PATH }}"
+          FIREBASE_PROJECT_ID: "${{ secrets.FIREBASE_PROJECT_ID }}"
+          ALLOWED_ORIGINS: "${{ secrets.ALLOWED_ORIGINS }}"
           EOF
 
       - name: Deploy to Cloud Run
