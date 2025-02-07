@@ -1,8 +1,5 @@
-# big query creds
-grid-stream-b40b40d499f6.json
-
-# Firebase
-gridstreamlogin-firebase-adminsdk-yz9fm-849b2737cd.json
+# Firebase and big query creds
+internal/config/*.json
 
 .env
 .DS_Store
