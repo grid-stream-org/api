@@ -31,6 +31,20 @@ jobs:
           docker build -t us-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gridstream/api .
           docker push us-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gridstream/api
 
+      - name: Create env.yaml
+        run: |
+          cat > env.yaml << EOF
+          GO_ENV: production
+          PORT: 8080
+          OUTPUT: stdout
+          LEVEL: INFO
+          FORMAT: JSON
+          FIREBASE_GOOGLE_CREDENTIAL: ${{ secrets.FIREBASE_GOOGLE_CREDENTIAL }}
+          CREDS_PATH: ${{ secrets.CREDS_PATH }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
+          EOF
+
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy gridstream-api \
@@ -38,5 +52,5 @@ jobs:
             --platform managed \
             --region ${{ secrets.GCP_REGION }} \
             --no-allow-unauthenticated \
-            --set-env-vars=GO_ENV=production,PORT=8080,OUTPUT=stdout,LEVEL=INFO,FORMAT=JSON,FIREBASE_GOOGLE_CREDENTIAL=${{ secrets.FIREBASE_GOOGLE_CREDENTIAL }},CREDS_PATH=${{ secrets.CREDS_PATH }},FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }},ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }} \
+            --env-vars-file env.yaml \
             --set-secrets=${{ secrets.CREDS_PATH }}=CREDS_PATH:1,${{ secrets.FIREBASE_GOOGLE_CREDENTIAL }}=FIREBASE_GOOGLE_CREDENTIAL:1
