@@ -32,7 +32,6 @@ jobs:
             --region ${{ secrets.GCP_REGION }} \
             --no-allow-unauthenticated \
             --set-env-vars "GO_ENV=production" \
-            --set-env-vars "PORT=8080" \
             --set-env-vars "OUTPUT=stdout" \
             --set-env-vars "LEVEL=INFO" \
             --set-env-vars "FORMAT=JSON" \
