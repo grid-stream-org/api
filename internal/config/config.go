@@ -40,15 +40,6 @@ func Load() (*Config, error) {
 		return nil, errors.WithStack(err)
 	}
 
-	// // Load Firebase credentials
-	// if isProduction {
-	// 	// mount secret
-	// 	cfg.Firebase.GoogleCredential = "/secrets/firebase.json"
-	// } else {
-	// 	// .env for local development
-	// 	cfg.Firebase.GoogleCredential = os.Getenv("FIREBASE_GOOGLE_CREDENTIAL")
-	// }
-
 	// Ensure Firebase credentials file exists
 	if _, err := os.Stat(cfg.Firebase.GoogleCredential); os.IsNotExist(err) {
 		return nil, errors.WithStack(fmt.Errorf("Firebase credentials file not found: %s", cfg.Firebase.GoogleCredential))
