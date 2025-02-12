@@ -39,19 +39,19 @@ func run(ctx context.Context, w io.Writer, args []string) error {
 	}
 
 	bqClient, err := bqclient.New(ctx, cfg.Database)
-    if err != nil {
-        return errors.Wrap(err, "failed to init big query client")
-    }
-    defer bqClient.Close()
+	if err != nil {
+		return errors.Wrap(err, "failed to init big query client")
+	}
+	defer bqClient.Close()
 
 	// Initialize Firebase Auth client
-	firebaseAuth, err := firebase.InitializeFirebaseClient(ctx, cfg, log)
+	firebaseClient, err := firebase.NewFirebaseClient(ctx, cfg, log)
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize Firebase Auth client")
 	}
 
 	// setup server handler
-	handler := server.NewServer(cfg, bqClient, firebaseAuth, log)
+	handler := server.NewServer(cfg, bqClient, firebaseClient, log)
 
 	// Create the HTTP server
 	srv := &http.Server{
@@ -62,7 +62,7 @@ func run(ctx context.Context, w io.Writer, args []string) error {
 	// Start the server in a goroutine
 	serverErrChan := make(chan error, 1)
 	go func() {
-		log.Info("Starting API server...")
+		log.Info(fmt.Sprintf("Starting API server on port %d", cfg.Port))
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			serverErrChan <- errors.Wrap(err, "server failed")
 		}

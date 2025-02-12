@@ -4,11 +4,11 @@ import (
 	"log/slog"
 	"net/http"
 
-	"firebase.google.com/go/auth"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/grid-stream-org/api/internal/config"
+	"github.com/grid-stream-org/api/pkg/firebase"
 	"github.com/grid-stream-org/batcher/pkg/bqclient"
 )
 
@@ -16,7 +16,7 @@ import (
 func NewServer(
 	cfg *config.Config,
 	bqclient bqclient.BQClient,
-	fbclient *auth.Client,
+	fbclient firebase.FirebaseClient,
 	log *slog.Logger,
 ) http.Handler {
 	r := chi.NewRouter()
