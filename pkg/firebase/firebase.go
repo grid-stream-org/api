@@ -4,7 +4,8 @@ import (
 	"context"
 	"log/slog"
 
-	"firebase.google.com/go"
+	"cloud.google.com/go/firestore"
+	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
 	"github.com/grid-stream-org/api/internal/config"
 	"google.golang.org/api/option"
@@ -12,24 +13,45 @@ import (
 
 var FirebaseAuthClient *auth.Client
 
-// InitializeFirebaseClient sets up the Firebase Auth client
-func InitializeFirebaseClient(ctx context.Context, cfg *config.Config, log *slog.Logger) (*auth.Client, error) {
-	// Create an option with the credentials file from your config
-	opt := option.WithCredentialsFile(cfg.Firebase.GoogleCredential)
+type FirebaseClient interface {
+	Auth() *auth.Client
+	Firestore() *firestore.Client
+}
 
-	// Initialize the Firebase App
+type firebaseClient struct {
+	authClient      *auth.Client
+	firestoreClient *firestore.Client
+}
+
+func (f *firebaseClient) Auth() *auth.Client {
+	return f.authClient
+}
+
+func (f *firebaseClient) Firestore() *firestore.Client {
+	return f.firestoreClient
+}
+
+// InitializeFirebaseClient sets up the Firebase Auth client and Firestore client
+func NewFirebaseClient(ctx context.Context, cfg *config.Config, log *slog.Logger) (FirebaseClient, error) {
+	opt := option.WithCredentialsFile(cfg.Firebase.GoogleCredential)
 	app, err := firebase.NewApp(ctx, nil, opt)
 	if err != nil {
 		return nil, err
 	}
 
-	// Initialize the Firebase Auth client
-	client, err := app.Auth(ctx)
+	authClient, err := app.Auth(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	FirebaseAuthClient = client
-	log.Info("Firebase Auth client initialized successfully")
-	return FirebaseAuthClient, nil
+	firestoreClient, err := app.Firestore(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Construct and return the interface
+	return &firebaseClient{
+		authClient:      authClient,
+		firestoreClient: firestoreClient,
+	}, nil
 }
