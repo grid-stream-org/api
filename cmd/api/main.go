@@ -62,7 +62,7 @@ func run(ctx context.Context, w io.Writer, args []string) error {
 	// Start the server in a goroutine
 	serverErrChan := make(chan error, 1)
 	go func() {
-		log.Info(fmt.Sprintf("Starting API server on port %d", cfg.Port))
+		log.Info("starting API server", "port", cfg.Port)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			serverErrChan <- errors.Wrap(err, "server failed")
 		}
