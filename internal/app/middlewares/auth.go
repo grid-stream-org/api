@@ -13,7 +13,7 @@ import (
 
 type contextKey string
 
-const userKey contextKey = "user"
+const userKey contextKey = "users"
 
 type AuthMiddleware struct {
 	FirebaseAuth *auth.Client

@@ -41,7 +41,7 @@ func Load() (*Config, error) {
 	}
 
 	// Ensure Firebase credentials file exists
-    // also bypass this check if we are running unit tests
+	// also bypass this check if we are running unit tests
 	if os.Getenv("TEST_ENV") != "true" {
 		if _, err := os.Stat(cfg.Firebase.GoogleCredential); os.IsNotExist(err) {
 			return nil, errors.WithStack(fmt.Errorf("Firebase credentials file not found: %s", cfg.Firebase.GoogleCredential))

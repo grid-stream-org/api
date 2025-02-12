@@ -66,9 +66,10 @@ func PerClientRateLimiter(next http.Handler) http.Handler {
 		if !cli.limiter.Allow() {
 			message := custom_error.New(http.StatusTooManyRequests, "Too many requests", errors.New("429 Too many requests"))
 			w.WriteHeader(http.StatusTooManyRequests)
-			err = json.NewEncoder(w).Encode(&message); if err != nil {
-                http.Error(w, "Internal Server error", http.StatusInternalServerError)
-            }
+			err = json.NewEncoder(w).Encode(&message)
+			if err != nil {
+				http.Error(w, "Internal Server error", http.StatusInternalServerError)
+			}
 			return
 		}
 

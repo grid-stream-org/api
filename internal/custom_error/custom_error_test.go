@@ -1,25 +1,25 @@
 package custom_error
 
 import (
-    "testing"
+	"testing"
 )
 
-func TestCustomError( t *testing.T) {
-    code := 404
-    message := "Resource not found"
+func TestCustomError(t *testing.T) {
+	code := 404
+	message := "Resource not found"
 
-    err := New(code, message, nil)
+	err := New(code, message, nil)
 
-    if err.Code != code {
-        t.Errorf("Expected Code %d, received %d", code, err.Code)
-    }
+	if err.Code != code {
+		t.Errorf("Expected Code %d, received %d", code, err.Code)
+	}
 
-    if err.Message != message {
-        t.Errorf("Expected message %s, received %s", message, err.Message)
-    }
+	if err.Message != message {
+		t.Errorf("Expected message %s, received %s", message, err.Message)
+	}
 
-    expectedErrorString := "Code: 404, Message: Resource not found, Error: Resource not found"
-    if err.Error() != expectedErrorString {
+	expectedErrorString := "Code: 404, Message: Resource not found, Error: Resource not found"
+	if err.Error() != expectedErrorString {
 		t.Errorf("expected Error() %q, got %q", expectedErrorString, err.Error())
 	}
 }
