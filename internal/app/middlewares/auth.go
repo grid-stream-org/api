@@ -49,6 +49,10 @@ func getRoleFromInt(value int) string {
 func (am *AuthMiddleware) RequireRole(requiredRoles ...string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method == "OPTIONS" {
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
 			// Get and verify token
 			token, err := am.FirebaseAuth.VerifyIDToken(r.Context(), getTokenFromHeader(r))
 			if err != nil {
