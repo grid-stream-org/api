@@ -27,17 +27,6 @@ func NewAuthMiddleware(firebaseClient firebase.FirebaseClient, log *slog.Logger)
 	}
 }
 
-func (am *AuthMiddleware) Handler(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
 // RequireAuth is used when you only need authentication, no role check
 func (am *AuthMiddleware) RequireAuth(next http.Handler) http.Handler {
 	return am.RequireRole()(next)
