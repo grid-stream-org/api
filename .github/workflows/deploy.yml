@@ -30,7 +30,7 @@ jobs:
             --image us-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gridstream/api \
             --platform managed \
             --region ${{ secrets.GCP_REGION }} \
-            --no-allow-unauthenticated \
+            --allow-unauthenticated \
             --min-instances=0 --max-instances=1 \
             --memory=512Mi --cpu=1 \
             --ingress=internal \

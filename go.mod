@@ -5,6 +5,7 @@ go 1.23.2
 toolchain go1.23.3
 
 require (
+	cloud.google.com/go/firestore v1.17.0
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-chi/cors v1.2.1
 	github.com/grid-stream-org/batcher v0.2.0
@@ -13,7 +14,6 @@ require (
 )
 
 require (
-	cloud.google.com/go/firestore v1.17.0 // indirect
 	cloud.google.com/go/longrunning v0.6.2 // indirect
 	cloud.google.com/go/storage v1.43.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -26,7 +26,7 @@ require (
 )
 
 require (
-	cloud.google.com/go v0.116.0 // indirect
+	cloud.google.com/go v0.116.0
 	cloud.google.com/go/auth v0.13.0 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.6 // indirect
 	cloud.google.com/go/bigquery v1.65.0
@@ -65,7 +65,7 @@ require (
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
-	golang.org/x/time v0.8.0 // indirect
+	golang.org/x/time v0.8.0
 	golang.org/x/tools v0.24.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 	google.golang.org/api v0.211.0
