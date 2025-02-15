@@ -33,7 +33,7 @@ jobs:
             --allow-unauthenticated \
             --min-instances=0 --max-instances=1 \
             --memory=512Mi --cpu=1 \
-            --ingress=internal \
+            --ingress=all \
             --set-env-vars "GO_ENV=production" \
             --set-env-vars "OUTPUT=stdout" \
             --set-env-vars "LEVEL=INFO" \
