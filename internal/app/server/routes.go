@@ -41,7 +41,7 @@ func AddRoutes(
 	r.Route("/v1", func(r chi.Router) {
 		r.Route("/projects", func(r chi.Router) {
 			// GET and PUT: only need "Residential"
-			r.With(authMiddleware.RequireRole("Residential")).Get("/{id}", middlewares.WrapHandler(projectHandlers.GetProjectHandler, log))
+			r.With(authMiddleware.RequireAuth).Get("/{id}", middlewares.WrapHandler(projectHandlers.GetProjectHandler, log))
 			r.With(authMiddleware.RequireRole("Residential")).Put("/{id}", middlewares.WrapHandler(projectHandlers.UpdateProjectHandler, log))
 
 			// POST and DELETE: only "Utility"
