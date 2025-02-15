@@ -44,5 +44,5 @@ jobs:
             --set-env-vars "^@^ALLOWED_ORIGINS=${{ secrets.GH_ALLOWED_ORIGINS }}" \
             --set-env-vars "CREDS_PATH=/secrets/bigquery/credentials.json" \
             --set-env-vars "FIREBASE_GOOGLE_CREDENTIAL=/secrets/firebase/credentials.json" \
-            --update-secrets=/secrets/bigquery/credentials.json=CREDS_PATH_SECRET:1 \
+            --update-secrets=/secrets/bigquery/credentials.json=CREDS_PATH_SECRET:2 \
             --update-secrets=/secrets/firebase/credentials.json=FIREBASE_GOOGLE_CREDENTIAL_SECRET:1
