@@ -59,15 +59,20 @@ func (h *projectHandlers) CreateProjectHandler(w http.ResponseWriter, r *http.Re
 	if req.UtilityID == "" || req.Location == "" {
 		return custom_error.New(http.StatusBadRequest, "All fields (utilityId, userId, location) are required", nil)
 	}
-	err := h.Repo.CreateProject(r.Context(), &models.Project{
+    proj := &models.Project{
 		ID:        uuid.New().String(),
 		UtilityID: req.UtilityID,
 		UserID:    "",
 		Location:  req.Location,
-	})
-	if err != nil {
-		return err
 	}
+	if err := h.Repo.CreateProject(r.Context(), proj); err != nil {
+        return err
+    }
+
+    if err := json.NewEncoder(w).Encode(*proj); err != nil {
+        return err
+    }
+	
 	w.WriteHeader(http.StatusCreated)
 	return nil
 }

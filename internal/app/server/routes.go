@@ -45,8 +45,8 @@ func AddRoutes(
 			r.With(authMiddleware.RequireRole("Residential")).Put("/{id}", middlewares.WrapHandler(projectHandlers.UpdateProjectHandler, log))
 
 			// POST and DELETE: only "Utility"
-			r.With(authMiddleware.RequireRole("Utility")).Post("/", middlewares.WrapHandler(projectHandlers.CreateProjectHandler, log))
-			r.With(authMiddleware.RequireRole("Utility")).Delete("/{id}", middlewares.WrapHandler(projectHandlers.DeleteProjectHandler, log))
+			r.With(authMiddleware.RequireRole("Technician")).Post("/", middlewares.WrapHandler(projectHandlers.CreateProjectHandler, log))
+			r.With(authMiddleware.RequireRole("Technician")).Delete("/{id}", middlewares.WrapHandler(projectHandlers.DeleteProjectHandler, log))
 
 		})
 
