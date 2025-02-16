@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -16,7 +15,9 @@ import (
 
 type DERMetadataRepository interface {
 	CreateDERMetadata(ctx context.Context, data *models.DERMetadata) error
+	BatchCreateDERMetadata(ctx context.Context, data []models.DERMetadata) error
 	GetDERMetadata(ctx context.Context, id string) (*models.DERMetadata, error)
+	ListDERMetadataByProject(ctx context.Context, id string) ([]models.DERMetadata, error)
 	UpdateDERMetadata(ctx context.Context, id string, data *models.DERMetadata) error
 	DeleteDERMetadata(ctx context.Context, id string) error
 }
@@ -29,62 +30,16 @@ func NewDERMetadataRepository(client bqclient.BQClient, log *slog.Logger) DERMet
 }
 
 func (r *derMetadataRepository) CreateDERMetadata(ctx context.Context, data *models.DERMetadata) error {
-	query := `
-        DECLARE inserted BOOL DEFAULT FALSE;
-
-        INSERT INTO gridstream_operations.der_metadata (id, type, nameplate_capacity, power_capacity, project_id)
-        SELECT 
-            @id,
-            @type,
-            @nameplate_capacity,
-            @power_capacity,
-            @project_id
-        FROM gridstream_operations.projects p
-        WHERE p.id = @project_id;
-
-        SET inserted = EXISTS(
-            SELECT 1
-            FROM gridstream_operations.der_metadata c
-            WHERE c.id = @id
-        );
-        SELECT inserted AS inserted;`
-
-	params := []bigquery.QueryParameter{
-		{Name: "id", Value: data.ID},
-		{Name: "type", Value: data.Type},
-		{Name: "nameplate_capacity", Value: data.NameplateCapacity},
-		{Name: "power_capacity", Value: data.PowerCapacity},
-		{Name: "project_id", Value: data.ProjectID},
-	}
-
-	it, err := r.client.Query(ctx, query, params)
-	if err != nil {
+	if err := r.client.Put(ctx, "der_metadata", data); err != nil {
 		return custom_error.New(http.StatusInternalServerError, "Failed to create der metadata", err)
 	}
+	return nil
+}
 
-	// Check to see if we inserted
-	var inserted bool
-	for {
-		var row []bigquery.Value
-		err := it.Next(&row)
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			return custom_error.New(http.StatusInternalServerError, "Error reading insertion result", err)
-		}
-
-		// Extract the boolean value
-		if len(row) > 0 {
-			inserted, _ = row[0].(bool)
-		}
+func (r *derMetadataRepository) BatchCreateDERMetadata(ctx context.Context, data []models.DERMetadata) error {
+	if err := r.client.Put(ctx, "der_metadata", data); err != nil {
+		return custom_error.New(http.StatusInternalServerError, "Failed to create all der metadata", err)
 	}
-
-	// If no row was inserted, return an error, likely incorrect project id
-	if !inserted {
-		return custom_error.New(http.StatusBadRequest, fmt.Sprintf("Failed to insert, please make sure your project id was correct: %s", data.ProjectID), nil)
-	}
-
 	return nil
 }
 
@@ -98,6 +53,35 @@ func (r *derMetadataRepository) GetDERMetadata(ctx context.Context, id string) (
 	}
 
 	return &derMetadata, nil
+}
+
+func (r *derMetadataRepository) ListDERMetadataByProject(ctx context.Context, id string) ([]models.DERMetadata, error) {
+	query := `
+        SELECT *
+        FROM gridstream_operations.der_metadata
+        WHERE project_id = @project_id`
+	params := []bigquery.QueryParameter{
+		{Name: "project_id", Value: id},
+	}
+	it, err := r.client.Query(ctx, query, params)
+	if err != nil {
+		return nil, custom_error.New(http.StatusInternalServerError, "Failed to list der metadata", err)
+	}
+
+	derMetadata := []models.DERMetadata{}
+	for {
+		var item models.DERMetadata
+		err := it.Next(&item)
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, custom_error.New(http.StatusInternalServerError, "Error reading der metadata", err)
+		}
+		derMetadata = append(derMetadata, item)
+	}
+
+	return derMetadata, nil
 }
 
 func (r *derMetadataRepository) UpdateDERMetadata(ctx context.Context, id string, data *models.DERMetadata) error {
