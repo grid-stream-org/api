@@ -66,11 +66,12 @@ func AddRoutes(
 		})
 
 		r.Route("/der-metadata", func(r chi.Router) {
-			r.Use(authMiddleware.RequireAuth)
-			r.Get("/{id}", middlewares.WrapHandler(derHandler.GetDERMetadataHandler, log))
-			r.Put("/{id}", middlewares.WrapHandler(derHandler.UpdateDERMetadataHandler, log))
-			r.Delete("/{id}", middlewares.WrapHandler(derHandler.DeleteDERMetadataHandler, log))
-			r.Post("/", middlewares.WrapHandler(derHandler.CreateDERMetadataHandler, log))
+			r.With(authMiddleware.RequireRole("Residential", "Utility")).Get("/{id}", middlewares.WrapHandler(derHandler.GetDERMetadataHandler, log))
+			r.With(authMiddleware.RequireRole("Residential", "Utility")).Get("/", middlewares.WrapHandler(derHandler.ListDERMetadataByProjectHandler, log))
+			r.With(authMiddleware.RequireRole("Residential", "Utility")).Put("/{id}", middlewares.WrapHandler(derHandler.UpdateDERMetadataHandler, log))
+			r.With(authMiddleware.RequireRole("Residential", "Utility")).Delete("/{id}", middlewares.WrapHandler(derHandler.DeleteDERMetadataHandler, log))
+			r.With(authMiddleware.RequireRole("Residential", "Utility")).Post("/", middlewares.WrapHandler(derHandler.CreateDERMetadataHandler, log))
+			r.With(authMiddleware.RequireRole("Residential", "Utility")).Post("/batch", middlewares.WrapHandler(derHandler.BatchCreateDERMetadataHandler, log))
 		})
 	})
 
