@@ -35,8 +35,9 @@ func AddRoutes(
 	// init middlewares
 	authMiddleware := middlewares.NewAuthMiddleware(fbClient, log)
 	r.Use(middlewares.PerClientRateLimiter)
+	r.Use(middlewares.BlockSuspiciousRequests)
 
-	// explicitely set 404 not found, no redirects
+	// explicitely set 404 not found, no redirects, to stop the random bots in its tracks right away
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Not Found", http.StatusNotFound)
 	})
