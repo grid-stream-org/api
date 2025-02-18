@@ -3,6 +3,7 @@ package server
 
 import (
 	"log/slog"
+	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/grid-stream-org/api/internal/app/handlers/v1"
@@ -34,6 +35,11 @@ func AddRoutes(
 	// init middlewares
 	authMiddleware := middlewares.NewAuthMiddleware(fbClient, log)
 	r.Use(middlewares.PerClientRateLimiter)
+
+	// explicitely set 404 not found, no redirects
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "Not Found", http.StatusNotFound)
+	})
 
 	// Health check route
 	r.Get("/health", middlewares.WrapHandler(healthHandler.HealthCheckHandler, log))
