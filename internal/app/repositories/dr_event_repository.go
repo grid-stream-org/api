@@ -80,7 +80,7 @@ func (r *drEventRepository) CreateDREvent(ctx context.Context, data *models.DREv
 		}
 	}
 
-	// If no row was inserted, return an error, likely incorrect project id
+	// If no row was inserted, return an error, likely incorrect  id
 	if !inserted {
 		return custom_error.New(http.StatusBadRequest, fmt.Sprintf("Failed to insert, please make sure your utility id is correct: %s", data.UtilityID), nil)
 	}
