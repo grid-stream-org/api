@@ -18,7 +18,7 @@ type DREventHandlers interface {
 	GetDREventHandler(w http.ResponseWriter, r *http.Request) error
 	UpdateDREventHandler(w http.ResponseWriter, r *http.Request) error
 	DeleteDREventHandler(w http.ResponseWriter, r *http.Request) error
-    GetDREventsByProjectID(w http.ResponseWriter, r *http.Request) error
+	GetDREventsByProjectID(w http.ResponseWriter, r *http.Request) error
 }
 
 type drEventHandlers struct {
@@ -110,12 +110,12 @@ func (h *drEventHandlers) DeleteDREventHandler(w http.ResponseWriter, r *http.Re
 }
 
 func (h *drEventHandlers) GetDREventsByProjectID(w http.ResponseWriter, r *http.Request) error {
-    id := chi.URLParam(r, "projectId")
-    if id == "" {
+	id := chi.URLParam(r, "projectId")
+	if id == "" {
 		return custom_error.New(http.StatusBadRequest, "project ID is required", nil)
 	}
-    events, err := h.Repo.GetDREventsById(r.Context(), id)
-    if err != nil {
+	events, err := h.Repo.GetDREventsByProjectId(r.Context(), id)
+	if err != nil {
 		return err
 	}
 
