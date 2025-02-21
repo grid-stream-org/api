@@ -84,6 +84,7 @@ func AddRoutes(
 		})
 
 		r.Route("/dr-events", func(r chi.Router) {
+            r.With(authMiddleware.RequireRole("Utility", "Residential")).Get("/project/{projectId}", middlewares.WrapHandler(drEventsHandler.GetDREventsByProjectID, log))
 			r.With(authMiddleware.RequireRole("Utility")).Get("/{id}", middlewares.WrapHandler(drEventsHandler.GetDREventHandler, log))
 			r.With(authMiddleware.RequireRole("Utility")).Put("/{id}", middlewares.WrapHandler(drEventsHandler.UpdateDREventHandler, log))
 			r.With(authMiddleware.RequireRole("Utility")).Post("/", middlewares.WrapHandler(drEventsHandler.CreateDREventHandler, log))
