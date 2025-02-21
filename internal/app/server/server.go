@@ -9,7 +9,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/grid-stream-org/api/internal/config"
 	"github.com/grid-stream-org/api/pkg/firebase"
-	"github.com/grid-stream-org/batcher/pkg/bqclient"
+	"github.com/grid-stream-org/go-commons/pkg/bqclient"
 )
 
 // NewServer sets up and returns an HTTP server

@@ -12,8 +12,8 @@ import (
 	"github.com/grid-stream-org/api/internal/app/server"
 	"github.com/grid-stream-org/api/internal/config"
 	"github.com/grid-stream-org/api/pkg/firebase"
-	"github.com/grid-stream-org/batcher/pkg/bqclient"
-	"github.com/grid-stream-org/batcher/pkg/logger"
+	"github.com/grid-stream-org/go-commons/pkg/bqclient"
+	"github.com/grid-stream-org/go-commons/pkg/logger"
 	"github.com/pkg/errors"
 )
 
