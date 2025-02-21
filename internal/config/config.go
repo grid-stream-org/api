@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/grid-stream-org/batcher/pkg/bqclient"
-	"github.com/grid-stream-org/batcher/pkg/logger"
+	"github.com/grid-stream-org/go-commons/pkg/bqclient"
+	"github.com/grid-stream-org/go-commons/pkg/logger"
 	"github.com/joho/godotenv" // Still needed for local
 	"github.com/kelseyhightower/envconfig"
 	"github.com/pkg/errors"

@@ -9,9 +9,8 @@ import (
 	"github.com/grid-stream-org/api/internal/app/logic"
 	"github.com/grid-stream-org/api/internal/custom_error"
 	"github.com/grid-stream-org/api/internal/models"
-	"github.com/grid-stream-org/batcher/pkg/bqclient"
+	"github.com/grid-stream-org/go-commons/pkg/bqclient"
 )
-
 
 type UtilityRepository interface {
 	CreateUtility(ctx context.Context, data *models.Utility) error

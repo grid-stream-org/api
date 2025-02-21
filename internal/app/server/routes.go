@@ -10,7 +10,7 @@ import (
 	"github.com/grid-stream-org/api/internal/app/middlewares"
 	"github.com/grid-stream-org/api/internal/app/repositories"
 	"github.com/grid-stream-org/api/pkg/firebase"
-	"github.com/grid-stream-org/batcher/pkg/bqclient"
+	"github.com/grid-stream-org/go-commons/pkg/bqclient"
 )
 
 func AddRoutes(
@@ -24,6 +24,7 @@ func AddRoutes(
 	utilRepo := repositories.NewUtilityRepository(bqClient, log)
 	contractRepo := repositories.NewContractRepository(bqClient, log)
 	derMetaRepo := repositories.NewDERMetadataRepository(bqClient, log)
+	drEventsRepo := repositories.NewDREventRepository(bqClient, log)
 
 	// init handlers
 	projectHandlers := handlers.NewProjectHandlers(projectRepo, log)
@@ -31,6 +32,7 @@ func AddRoutes(
 	contractHandlers := handlers.NewContractHandlers(contractRepo, log)
 	healthHandler := handlers.NewHealthHandler(log)
 	derHandler := handlers.NewDERMetadataHandlers(derMetaRepo, log)
+	drEventsHandler := handlers.NewDREventHandlers(drEventsRepo, log)
 
 	// init middlewares
 	authMiddleware := middlewares.NewAuthMiddleware(fbClient, log)
@@ -79,6 +81,13 @@ func AddRoutes(
 			r.With(authMiddleware.RequireRole("Residential", "Utility")).Delete("/{id}", middlewares.WrapHandler(derHandler.DeleteDERMetadataHandler, log))
 			r.With(authMiddleware.RequireRole("Residential", "Utility")).Post("/", middlewares.WrapHandler(derHandler.CreateDERMetadataHandler, log))
 			r.With(authMiddleware.RequireRole("Residential", "Utility")).Post("/batch", middlewares.WrapHandler(derHandler.BatchCreateDERMetadataHandler, log))
+		})
+
+		r.Route("/dr-events", func(r chi.Router) {
+			r.With(authMiddleware.RequireRole("Utility")).Get("/{id}", middlewares.WrapHandler(drEventsHandler.GetDREventHandler, log))
+			r.With(authMiddleware.RequireRole("Utility")).Put("/{id}", middlewares.WrapHandler(drEventsHandler.UpdateDREventHandler, log))
+			r.With(authMiddleware.RequireRole("Utility")).Post("/", middlewares.WrapHandler(drEventsHandler.CreateDREventHandler, log))
+			r.With(authMiddleware.RequireRole("Utility")).Delete("/{id}", middlewares.WrapHandler(drEventsHandler.DeleteDREventHandler, log))
 		})
 	})
 
