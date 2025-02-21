@@ -20,6 +20,7 @@ type DREventRepository interface {
 	GetDREvent(ctx context.Context, id string) (*models.DREvents, error)
 	UpdateDREvent(ctx context.Context, id string, data *models.DREvents) error
 	DeleteDREvent(ctx context.Context, id string) error
+	GetDREventsByProjectId(ctx context.Context, id string) ([]models.DREvents, error)
 }
 
 type drEventRepository struct {
@@ -122,4 +123,47 @@ func (r *drEventRepository) DeleteDREvent(ctx context.Context, id string) error 
 		return custom_error.New(http.StatusInternalServerError, "Failed to delete demand response event", err)
 	}
 	return nil
+}
+
+func (r *drEventRepository) GetDREventsByProjectId(ctx context.Context, id string) ([]models.DREvents, error) {
+	query := `
+        SELECT 
+            dr.id AS id,
+            dr.start_time,
+            dr.end_time,
+            dr.utility_id
+        FROM 
+            gridstream_operations.projects AS p
+        JOIN 
+            gridstream_operations.dr_events AS dr
+        ON 
+            p.utility_id = dr.utility_id
+        WHERE 
+            p.id = @project_id
+        ORDER BY 
+            dr.start_time DESC;
+    `
+
+	params := []bigquery.QueryParameter{
+		{Name: "project_id", Value: id},
+	}
+
+	it, err := r.client.Query(ctx, query, params)
+	if err != nil {
+		return nil, custom_error.New(http.StatusInternalServerError, "Failed to list der metadata", err)
+	}
+
+	drEvents := []models.DREvents{}
+	for {
+		var item models.DREvents
+		err := it.Next(&item)
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, custom_error.New(http.StatusInternalServerError, "Error reading der metadata", err)
+		}
+		drEvents = append(drEvents, item)
+	}
+	return drEvents, nil
 }
