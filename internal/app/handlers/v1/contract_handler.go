@@ -17,7 +17,7 @@ type ContractHandler interface {
 	GetContractHandler(w http.ResponseWriter, r *http.Request) error
 	UpdateContractHandler(w http.ResponseWriter, r *http.Request) error
 	DeleteContractHandler(w http.ResponseWriter, r *http.Request) error
-    GetContractsByProjectIdHandler(w http.ResponseWriter, r *http.Request) error
+    GetContractsByProjectIDHandler(w http.ResponseWriter, r *http.Request) error
 }
 
 type contractHandler struct {
@@ -121,13 +121,13 @@ func (h *contractHandler) DeleteContractHandler(w http.ResponseWriter, r *http.R
 	return nil
 }
 
-func (h *contractHandler) GetContractsByProjectIdHandler(w http.ResponseWriter, r *http.Request) error {
+func (h *contractHandler) GetContractsByProjectIDHandler(w http.ResponseWriter, r *http.Request) error {
     id := chi.URLParam(r, "projectId")
     if id == "" {
 		return custom_error.New(http.StatusBadRequest, "Project ID required", nil)
 	}
 
-    contracts, err := h.Repo.GetContractsByProjectId(r.Context(), id)
+    contracts, err := h.Repo.GetContractsByProjectID(r.Context(), id)
 	if err != nil {
 		return err
 	}

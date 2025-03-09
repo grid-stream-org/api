@@ -20,7 +20,7 @@ type ContractRepository interface {
 	GetContract(ctx context.Context, id string) (*models.Contract, error)
 	UpdateContract(ctx context.Context, id string, data *models.Contract) error
 	DeleteContract(ctx context.Context, id string) error
-	GetContractsByProjectId(ctx context.Context, id string) ([]models.Contract, error)
+	GetContractsByProjectID(ctx context.Context, id string) ([]models.Contract, error)
 }
 
 type contractRepository struct {
@@ -129,7 +129,7 @@ func (r *contractRepository) DeleteContract(ctx context.Context, id string) erro
 	return nil
 }
 
-func (r *contractRepository) GetContractsByProjectId(ctx context.Context, id string) ([]models.Contract, error) {
+func (r *contractRepository) GetContractsByProjectID(ctx context.Context, id string) ([]models.Contract, error) {
 
 	query := `
         SELECT 

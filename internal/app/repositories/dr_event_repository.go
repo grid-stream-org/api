@@ -20,7 +20,7 @@ type DREventRepository interface {
 	GetDREvent(ctx context.Context, id string) (*models.DREvents, error)
 	UpdateDREvent(ctx context.Context, id string, data *models.DREvents) error
 	DeleteDREvent(ctx context.Context, id string) error
-	GetDREventsByProjectId(ctx context.Context, id string) ([]models.DREvents, error)
+	GetDREventsByProjectID(ctx context.Context, id string) ([]models.DREvents, error)
 }
 
 type drEventRepository struct {
@@ -125,7 +125,7 @@ func (r *drEventRepository) DeleteDREvent(ctx context.Context, id string) error 
 	return nil
 }
 
-func (r *drEventRepository) GetDREventsByProjectId(ctx context.Context, id string) ([]models.DREvents, error) {
+func (r *drEventRepository) GetDREventsByProjectID(ctx context.Context, id string) ([]models.DREvents, error) {
 	query := `
         SELECT 
             dr.id AS id,

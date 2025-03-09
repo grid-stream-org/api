@@ -43,7 +43,7 @@ func (m *MockContractRepository) DeleteContract(ctx context.Context, id string) 
 	return args.Error(0)
 }
 
-func (m *MockContractRepository) GetContractsByProjectId(ctx context.Context, id string) ([]models.Contract, error) {
+func (m *MockContractRepository) GetContractsByProjectID(ctx context.Context, id string) ([]models.Contract, error) {
 	args := m.Called(ctx, id)
 	var c []models.Contract
 	return c, args.Error(1)
