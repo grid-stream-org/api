@@ -136,7 +136,9 @@ func (h *contractHandler) GetContractsByProjectIdHandler(w http.ResponseWriter, 
 		contracts = []models.Contract{}
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(contracts)
+	if err := json.NewEncoder(w).Encode(contracts); err != nil {
+        return err
+    }
     w.WriteHeader(http.StatusOK)
 
     return nil
