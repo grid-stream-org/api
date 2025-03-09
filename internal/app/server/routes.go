@@ -25,6 +25,7 @@ func AddRoutes(
 	contractRepo := repositories.NewContractRepository(bqClient, log)
 	derMetaRepo := repositories.NewDERMetadataRepository(bqClient, log)
 	drEventsRepo := repositories.NewDREventRepository(bqClient, log)
+	derDataRepo := repositories.NewDERRepository(bqClient, log)
 
 	// init handlers
 	projectHandlers := handlers.NewProjectHandlers(projectRepo, log)
@@ -33,8 +34,7 @@ func AddRoutes(
 	healthHandler := handlers.NewHealthHandler(log)
 	derHandler := handlers.NewDERMetadataHandlers(derMetaRepo, log)
 	drEventsHandler := handlers.NewDREventHandlers(drEventsRepo, log)
-
-	// init middlewares
+	derDataHandler := handlers.NewDERHandlers(derDataRepo, log)
 	authMiddleware := middlewares.NewAuthMiddleware(fbClient, log)
 	r.Use(middlewares.PerClientRateLimiter)
 	r.Use(middlewares.BlockSuspiciousRequests)
@@ -90,6 +90,10 @@ func AddRoutes(
 			r.With(authMiddleware.RequireRole("Utility")).Post("/", middlewares.WrapHandler(drEventsHandler.CreateDREventHandler, log))
 			r.With(authMiddleware.RequireRole("Utility")).Delete("/{id}", middlewares.WrapHandler(drEventsHandler.DeleteDREventHandler, log))
 		})
+
+		r.Route("/der-data", func(r chi.Router) {
+			r.With(authMiddleware.RequireRole("Technician", "Residential")).Get("/project/{projectId}", middlewares.WrapHandler(derDataHandler.GetDERDataByProjectIDHandler, log))
+	})
 	})
 
 }
