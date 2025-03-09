@@ -67,11 +67,11 @@ func AddRoutes(
 		})
 
 		r.Route("/contracts", func(r chi.Router) {
-			r.Use(authMiddleware.RequireAuth)
-			r.Get("/{id}", middlewares.WrapHandler(contractHandlers.GetContractHandler, log))
-			r.Put("/{id}", middlewares.WrapHandler(contractHandlers.UpdateContractHandler, log))
-			r.Delete("/{id}", middlewares.WrapHandler(contractHandlers.DeleteContractHandler, log))
-			r.Post("/", middlewares.WrapHandler(contractHandlers.CreateContractHandler, log))
+			r.With(authMiddleware.RequireRole("Residential", "Utility")).Get("/{id}", middlewares.WrapHandler(contractHandlers.GetContractHandler, log))
+            r.With(authMiddleware.RequireRole("Utility", "Residential")).Get("/project/{projectId}", middlewares.WrapHandler(contractHandlers.GetContractsByProjectIdHandler, log))
+			r.With(authMiddleware.RequireRole("Residential", "Utility")).Put("/{id}", middlewares.WrapHandler(contractHandlers.UpdateContractHandler, log))
+			r.With(authMiddleware.RequireRole("Residential", "Utility")).Delete("/{id}", middlewares.WrapHandler(contractHandlers.DeleteContractHandler, log))
+			r.With(authMiddleware.RequireRole("Residential", "Utility")).Post("/", middlewares.WrapHandler(contractHandlers.CreateContractHandler, log))
 		})
 
 		r.Route("/der-metadata", func(r chi.Router) {
@@ -84,7 +84,7 @@ func AddRoutes(
 		})
 
 		r.Route("/dr-events", func(r chi.Router) {
-            r.With(authMiddleware.RequireRole("Utility", "Residential")).Get("/project/{projectId}", middlewares.WrapHandler(drEventsHandler.GetDREventsByProjectID, log))
+            r.With(authMiddleware.RequireRole("Utility", "Residential")).Get("/project/{projectId}", middlewares.WrapHandler(drEventsHandler.GetDREventsByProjectIdHandler, log))
 			r.With(authMiddleware.RequireRole("Utility")).Get("/{id}", middlewares.WrapHandler(drEventsHandler.GetDREventHandler, log))
 			r.With(authMiddleware.RequireRole("Utility")).Put("/{id}", middlewares.WrapHandler(drEventsHandler.UpdateDREventHandler, log))
 			r.With(authMiddleware.RequireRole("Utility")).Post("/", middlewares.WrapHandler(drEventsHandler.CreateDREventHandler, log))

@@ -20,6 +20,7 @@ type ContractRepository interface {
 	GetContract(ctx context.Context, id string) (*models.Contract, error)
 	UpdateContract(ctx context.Context, id string, data *models.Contract) error
 	DeleteContract(ctx context.Context, id string) error
+	GetContractsByProjectId(ctx context.Context, id string) ([]models.Contract, error)
 }
 
 type contractRepository struct {
@@ -126,4 +127,46 @@ func (r *contractRepository) DeleteContract(ctx context.Context, id string) erro
 		return custom_error.New(http.StatusInternalServerError, "Failed to delete contract", err)
 	}
 	return nil
+}
+
+func (r *contractRepository) GetContractsByProjectId(ctx context.Context, id string) ([]models.Contract, error) {
+
+	query := `
+        SELECT 
+            c.id AS id,
+            c.contract_threshold,
+            c.start_date,
+            c.end_date,
+            c.status,
+            c.project_id
+        FROM 
+            gridstream_operations.contracts AS c
+        WHERE 
+            c.project_id = @project_id
+        ORDER BY 
+            c.start_date DESC;
+    `
+
+	params := []bigquery.QueryParameter{
+		{Name: "project_id", Value: id},
+	}
+
+	it, err := r.client.Query(ctx, query, params)
+	if err != nil {
+		return nil, custom_error.New(http.StatusInternalServerError, "Failed to list contracts", err)
+	}
+
+	contracts := []models.Contract{}
+	for {
+		var item models.Contract
+		err := it.Next(&item)
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, custom_error.New(http.StatusInternalServerError, "Error reading contract data", err)
+		}
+		contracts = append(contracts, item)
+	}
+	return contracts, nil
 }
