@@ -55,7 +55,6 @@ func (r *derRepository) GetDERDataByProjectID(ctx context.Context, id string) ([
         if err != nil {
             return nil, custom_error.New(http.StatusInternalServerError, "Error reading DER data", err)
         }
-		slog.Debug("item is ", item)
         derData = append(derData, item)
     }
 
