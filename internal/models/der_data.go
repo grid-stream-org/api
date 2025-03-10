@@ -9,7 +9,7 @@ type DERData struct {
 	CurrentOutput         float64   `json:"current_output"`
 	Units                 string    `json:"units"`
 	ProjectID             string    `json:"project_id"`
-	Baseline              string    `json:"baseline"`
+	Baseline              float64    `json:"baseline"`
 	IsOnline              bool      `json:"is_online"`
 	IsStandalone          bool      `json:"is_standalone"`
 	ConnectionStartAt     string    `json:"connection_start_at"`
