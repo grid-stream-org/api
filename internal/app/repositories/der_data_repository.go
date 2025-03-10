@@ -33,26 +33,31 @@ func (r *derRepository) GetDERDataByProjectID(ctx context.Context, id string) ([
         ORDER BY timestamp DESC;
     `
 
-	params := []bigquery.QueryParameter{
-		{Name: "project_id", Value: id},
-	}
+		params := []bigquery.QueryParameter{
+        {Name: "project_id", Value: id},
+    }
 
-	it, err := r.client.Query(ctx, query, params)
-	if err != nil {
-		return nil, custom_error.New(http.StatusInternalServerError, "Failed to list DER data", err)
-	}
+    it, err := r.client.Query(ctx, query, params) 
+    if err != nil {
+        return nil, custom_error.New(http.StatusInternalServerError, "Failed to list DER data", err)
+    }
 
-	var derData []models.DERData
-	for {
-		var item models.DERData
-		err := it.Next(&item)
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			return nil, custom_error.New(http.StatusInternalServerError, "Error reading DER data", err)
-		}
-		derData = append(derData, item)
-	}
-	return derData, nil
+    derData := []models.DERData{}
+    
+    for {
+        var item models.DERData
+        err := it.Next(&item)
+        
+        if err == iterator.Done {
+            break 
+        }
+
+        if err != nil {
+            return nil, custom_error.New(http.StatusInternalServerError, "Error reading DER data", err)
+        }
+		slog.Debug("item is ", item)
+        derData = append(derData, item)
+    }
+
+    return derData, nil
 }

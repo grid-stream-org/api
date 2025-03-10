@@ -35,6 +35,8 @@ func AddRoutes(
 	derHandler := handlers.NewDERMetadataHandlers(derMetaRepo, log)
 	drEventsHandler := handlers.NewDREventHandlers(drEventsRepo, log)
 	derDataHandler := handlers.NewDERHandlers(derDataRepo, log)
+
+	
 	authMiddleware := middlewares.NewAuthMiddleware(fbClient, log)
 	r.Use(middlewares.PerClientRateLimiter)
 	r.Use(middlewares.BlockSuspiciousRequests)

@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/grid-stream-org/api/internal/app/repositories"
+	"github.com/grid-stream-org/api/internal/custom_error"
 )
 
 type DERHandler interface {
@@ -23,7 +24,10 @@ func NewDERHandlers(repo repositories.DERRepository, log *slog.Logger) DERHandle
 }
 
 func (h *derHandler) GetDERDataByProjectIDHandler(w http.ResponseWriter, r *http.Request) error {
-	projectID := chi.URLParam(r, "project_id")
+	projectID := chi.URLParam(r, "projectId")
+	if projectID == "" {
+		return custom_error.New(http.StatusBadRequest, "Project ID required", nil)
+	}
 	derData, err := h.Repo.GetDERDataByProjectID(r.Context(), projectID)
 	if err != nil {
 		return err
