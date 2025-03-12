@@ -53,8 +53,8 @@ func PerClientRateLimiter(next http.Handler) http.Handler {
 		// Get or create a rate limiter for the client
 		value, exists := clients.Load(ip)
 		if !exists {
-			// TODO: may need to change limits (10 req/sec, burst of 20), this means that user will be able to make 10 req/sec after 20 req/sec burst
-			limiter := rate.NewLimiter(2, 3)
+			// TODO: may need to change limits (3 req/sec, burst of 6), this means that user will be able to make 3 req/sec after 6 req/sec burst
+			limiter := rate.NewLimiter(3, 6)
 			value = &client{limiter: limiter, lastSeen: time.Now()}
 			clients.Store(ip, value)
 		}
