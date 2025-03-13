@@ -25,6 +25,7 @@ func AddRoutes(
 	contractRepo := repositories.NewContractRepository(bqClient, log)
 	derMetaRepo := repositories.NewDERMetadataRepository(bqClient, log)
 	drEventsRepo := repositories.NewDREventRepository(bqClient, log)
+	notificationRepo := repositories.NewNotificationRepository(fbClient, log)
 
 	// init handlers
 	projectHandlers := handlers.NewProjectHandlers(projectRepo, log)
@@ -33,6 +34,7 @@ func AddRoutes(
 	healthHandler := handlers.NewHealthHandler(log)
 	derHandler := handlers.NewDERMetadataHandlers(derMetaRepo, log)
 	drEventsHandler := handlers.NewDREventHandlers(drEventsRepo, log)
+	notificationHandler := handlers.NewNotificationHandler(notificationRepo, log)
 
 	// init middlewares
 	authMiddleware := middlewares.NewAuthMiddleware(fbClient, log)
@@ -68,7 +70,7 @@ func AddRoutes(
 
 		r.Route("/contracts", func(r chi.Router) {
 			r.With(authMiddleware.RequireRole("Residential", "Utility")).Get("/{id}", middlewares.WrapHandler(contractHandlers.GetContractHandler, log))
-            r.With(authMiddleware.RequireRole("Utility", "Residential")).Get("/project/{projectId}", middlewares.WrapHandler(contractHandlers.GetContractsByProjectIDHandler, log))
+			r.With(authMiddleware.RequireRole("Utility", "Residential")).Get("/project/{projectId}", middlewares.WrapHandler(contractHandlers.GetContractsByProjectIDHandler, log))
 			r.With(authMiddleware.RequireRole("Residential", "Utility")).Put("/{id}", middlewares.WrapHandler(contractHandlers.UpdateContractHandler, log))
 			r.With(authMiddleware.RequireRole("Residential", "Utility")).Delete("/{id}", middlewares.WrapHandler(contractHandlers.DeleteContractHandler, log))
 			r.With(authMiddleware.RequireRole("Residential", "Utility")).Post("/", middlewares.WrapHandler(contractHandlers.CreateContractHandler, log))
@@ -84,11 +86,16 @@ func AddRoutes(
 		})
 
 		r.Route("/dr-events", func(r chi.Router) {
-            r.With(authMiddleware.RequireRole("Utility", "Residential")).Get("/project/{projectId}", middlewares.WrapHandler(drEventsHandler.GetDREventsByProjectIDHandler, log))
+			r.With(authMiddleware.RequireRole("Utility", "Residential")).Get("/project/{projectId}", middlewares.WrapHandler(drEventsHandler.GetDREventsByProjectIDHandler, log))
 			r.With(authMiddleware.RequireRole("Utility")).Get("/{id}", middlewares.WrapHandler(drEventsHandler.GetDREventHandler, log))
 			r.With(authMiddleware.RequireRole("Utility")).Put("/{id}", middlewares.WrapHandler(drEventsHandler.UpdateDREventHandler, log))
 			r.With(authMiddleware.RequireRole("Utility")).Post("/", middlewares.WrapHandler(drEventsHandler.CreateDREventHandler, log))
 			r.With(authMiddleware.RequireRole("Utility")).Delete("/{id}", middlewares.WrapHandler(drEventsHandler.DeleteDREventHandler, log))
+		})
+
+		r.Route("/notifications", func(r chi.Router) {
+			r.Use(authMiddleware.RequireAuth)
+			r.Post("/", middlewares.WrapHandler(notificationHandler.NotifyUserHandler, log))
 		})
 	})
 

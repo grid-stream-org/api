@@ -49,6 +49,7 @@ func run(ctx context.Context, w io.Writer, args []string) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize Firebase Auth client")
 	}
+	defer firebaseClient.Close()
 
 	// setup server handler
 	handler := server.NewServer(cfg, bqClient, firebaseClient, log)

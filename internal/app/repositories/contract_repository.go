@@ -25,10 +25,11 @@ type ContractRepository interface {
 
 type contractRepository struct {
 	client bqclient.BQClient
+    log *slog.Logger
 }
 
 func NewContractRepository(client bqclient.BQClient, log *slog.Logger) ContractRepository {
-	return &contractRepository{client: client}
+	return &contractRepository{client: client, log: log}
 }
 
 func (r *contractRepository) CreateContract(ctx context.Context, data *models.Contract) error {
