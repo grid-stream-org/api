@@ -21,12 +21,12 @@ type ContractHandler interface {
 }
 
 type contractHandler struct {
-	Repo repositories.ContractRepository
-	Log  *slog.Logger
+	repo repositories.ContractRepository
+	log  *slog.Logger
 }
 
 func NewContractHandlers(repo repositories.ContractRepository, log *slog.Logger) ContractHandler {
-	return &contractHandler{Repo: repo, Log: log}
+	return &contractHandler{repo: repo, log: log}
 }
 
 func (h *contractHandler) CreateContractHandler(w http.ResponseWriter, r *http.Request) error {
@@ -41,7 +41,7 @@ func (h *contractHandler) CreateContractHandler(w http.ResponseWriter, r *http.R
 	if !req.Status.IsValid() {
 		return custom_error.New(http.StatusBadRequest, "Invalid status must be active, inactive or pending", nil)
 	}
-	err := h.Repo.CreateContract(r.Context(), &models.Contract{
+	err := h.repo.CreateContract(r.Context(), &models.Contract{
 		ID:                uuid.New().String(),
 		ContractThreshold: req.ContractThreshold,
 		StartDate:         req.StartDate,
@@ -62,7 +62,7 @@ func (h *contractHandler) GetContractHandler(w http.ResponseWriter, r *http.Requ
 	if id == "" {
 		return custom_error.New(http.StatusBadRequest, "Contract ID not given", nil)
 	}
-	contract, err := h.Repo.GetContract(r.Context(), id)
+	contract, err := h.repo.GetContract(r.Context(), id)
 	if err != nil {
 		return err
 	}
@@ -94,7 +94,7 @@ func (h *contractHandler) UpdateContractHandler(w http.ResponseWriter, r *http.R
 	if req.Status != "" && !req.Status.IsValid() {
 		return custom_error.New(http.StatusBadRequest, "Invalid status must be active, inactive or pending", nil)
 	}
-	err := h.Repo.UpdateContract(r.Context(), id, &models.Contract{
+	err := h.repo.UpdateContract(r.Context(), id, &models.Contract{
 		ContractThreshold: req.ContractThreshold,
 		StartDate:         req.StartDate,
 		EndDate:           req.EndDate,
@@ -114,7 +114,7 @@ func (h *contractHandler) DeleteContractHandler(w http.ResponseWriter, r *http.R
 	if id == "" {
 		return custom_error.New(http.StatusBadRequest, "Contract ID required", nil)
 	}
-	if err := h.Repo.DeleteContract(r.Context(), id); err != nil {
+	if err := h.repo.DeleteContract(r.Context(), id); err != nil {
 		return err
 	}
 	w.WriteHeader(http.StatusOK)
@@ -127,7 +127,7 @@ func (h *contractHandler) GetContractsByProjectIDHandler(w http.ResponseWriter, 
 		return custom_error.New(http.StatusBadRequest, "Project ID required", nil)
 	}
 
-    contracts, err := h.Repo.GetContractsByProjectID(r.Context(), id)
+    contracts, err := h.repo.GetContractsByProjectID(r.Context(), id)
 	if err != nil {
 		return err
 	}

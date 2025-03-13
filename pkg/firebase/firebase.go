@@ -11,11 +11,10 @@ import (
 	"google.golang.org/api/option"
 )
 
-var FirebaseAuthClient *auth.Client
-
 type FirebaseClient interface {
 	Auth() *auth.Client
 	Firestore() *firestore.Client
+	Close() error
 }
 
 type firebaseClient struct {
@@ -31,7 +30,11 @@ func (f *firebaseClient) Firestore() *firestore.Client {
 	return f.firestoreClient
 }
 
-// InitializeFirebaseClient sets up the Firebase Auth client and Firestore client
+func (f *firebaseClient) Close() error {
+	return f.firestoreClient.Close()
+}
+
+// NewFirebaseClient initializes Firebase Auth & Firestore clients
 func NewFirebaseClient(ctx context.Context, cfg *config.Config, log *slog.Logger) (FirebaseClient, error) {
 	opt := option.WithCredentialsFile(cfg.Firebase.GoogleCredential)
 	app, err := firebase.NewApp(ctx, nil, opt)
@@ -49,7 +52,6 @@ func NewFirebaseClient(ctx context.Context, cfg *config.Config, log *slog.Logger
 		return nil, err
 	}
 
-	// Construct and return the interface
 	return &firebaseClient{
 		authClient:      authClient,
 		firestoreClient: firestoreClient,
