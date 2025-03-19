@@ -9,4 +9,5 @@ type FaultNotification struct {
 	StartTime time.Time `firestore:"start_time" json:"start_time"`
 	EndTime   time.Time `firestore:"end_time" json:"end_time"`
 	Average   float64   `firestore:"average" json:"average"`
+	Read      bool      `firestore:"read" json:"read"`
 }
