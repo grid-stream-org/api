@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/grid-stream-org/api/internal/app/repositories"
 	"github.com/grid-stream-org/api/internal/custom_error"
 	"github.com/grid-stream-org/api/internal/models"
@@ -14,7 +13,7 @@ import (
 
 type ProjectAverageHandler interface {
 	CreateProjectAverageHandler(w http.ResponseWriter, r *http.Request) error
-	GetProjectAveragesByDateRangeHandler(w http.ResponseWriter, r *http.Request) error
+	GetProjectAveragesHandler(w http.ResponseWriter, r *http.Request) error
 }
 
 type projectAverageHandler struct {
@@ -51,34 +50,51 @@ func (h *projectAverageHandler) CreateProjectAverageHandler(w http.ResponseWrite
 	return nil
 }
 
-func (h *projectAverageHandler) GetProjectAveragesByDateRangeHandler(w http.ResponseWriter, r *http.Request) error {
-	projectID := chi.URLParam(r, "projectId")
-	if projectID == "" {
-		return custom_error.New(http.StatusBadRequest, "Project ID required", nil)
-	}
-
+func (h *projectAverageHandler) GetProjectAveragesHandler(w http.ResponseWriter, r *http.Request) error {
+	// Get query parameters
+	projectID := r.URL.Query().Get("project_id")
 	startTimeStr := r.URL.Query().Get("start_time")
 	endTimeStr := r.URL.Query().Get("end_time")
-
-	if startTimeStr == "" || endTimeStr == "" {
-		return custom_error.New(http.StatusBadRequest, "Both start_time and end_time query parameters are required", nil)
+	
+	// Project ID is required
+	if projectID == "" {
+		return custom_error.New(http.StatusBadRequest, "project_id query parameter is required", nil)
 	}
 
-	startTime, err := time.Parse(time.RFC3339, startTimeStr)
-	if err != nil {
-		return custom_error.New(http.StatusBadRequest, "Invalid start_time format. Use RFC3339 format (e.g., 2006-01-02T15:04:05Z)", err)
+	// If both time parameters are provided, filter by date range
+	if startTimeStr != "" && endTimeStr != "" {
+		startTime, err := time.Parse(time.RFC3339, startTimeStr)
+		if err != nil {
+			return custom_error.New(http.StatusBadRequest, "Invalid start_time format. Use RFC3339 format (e.g., 2006-01-02T15:04:05Z)", err)
+		}
+
+		endTime, err := time.Parse(time.RFC3339, endTimeStr)
+		if err != nil {
+			return custom_error.New(http.StatusBadRequest, "Invalid end_time format. Use RFC3339 format (e.g., 2006-01-02T15:04:05Z)", err)
+		}
+
+		if endTime.Before(startTime) {
+			return custom_error.New(http.StatusBadRequest, "End time must be after start time", nil)
+		}
+
+		averages, err := h.repo.GetProjectAveragesByDateRange(r.Context(), projectID, startTime, endTime)
+		if err != nil {
+			return err
+		}
+
+		if averages == nil {
+			averages = []models.ProjectAverage{}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(averages); err != nil {
+			return err
+		}
+		return nil
 	}
 
-	endTime, err := time.Parse(time.RFC3339, endTimeStr)
-	if err != nil {
-		return custom_error.New(http.StatusBadRequest, "Invalid end_time format. Use RFC3339 format (e.g., 2006-01-02T15:04:05Z)", err)
-	}
-
-	if endTime.Before(startTime) {
-		return custom_error.New(http.StatusBadRequest, "End time must be after start time", nil)
-	}
-
-	averages, err := h.repo.GetProjectAveragesByDateRange(r.Context(), projectID, startTime, endTime)
+	// If time parameters are not provided, get all averages for the project
+	averages, err := h.repo.GetProjectAveragesByProjectID(r.Context(), projectID)
 	if err != nil {
 		return err
 	}
@@ -91,6 +107,5 @@ func (h *projectAverageHandler) GetProjectAveragesByDateRangeHandler(w http.Resp
 	if err := json.NewEncoder(w).Encode(averages); err != nil {
 		return err
 	}
-	w.WriteHeader(http.StatusOK)
 	return nil
 }

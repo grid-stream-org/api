@@ -103,7 +103,7 @@ func AddRoutes(
 
 		r.Route("/project-averages", func(r chi.Router) {
 			r.With(authMiddleware.RequireRole("Residential", "Utility")).Post("/", middlewares.WrapHandler(projectAverageHandlers.CreateProjectAverageHandler, log))
-			r.With(authMiddleware.RequireRole("Residential", "Utility")).Get("/project/{projectId}/range", middlewares.WrapHandler(projectAverageHandlers.GetProjectAveragesByDateRangeHandler, log))
+			r.With(authMiddleware.RequireRole("Residential", "Utility")).Get("/", middlewares.WrapHandler(projectAverageHandlers.GetProjectAveragesHandler, log))
 		})
 	})
 

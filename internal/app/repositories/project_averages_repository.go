@@ -16,6 +16,7 @@ import (
 
 type ProjectAverageRepository interface {
 	CreateProjectAverage(ctx context.Context, data *models.ProjectAverage) error
+	GetProjectAveragesByProjectID(ctx context.Context, projectID string) ([]models.ProjectAverage, error)
 	GetProjectAveragesByDateRange(ctx context.Context, projectID string, startTime, endTime time.Time) ([]models.ProjectAverage, error)
 }
 
@@ -66,7 +67,6 @@ func (r *projectAverageRepository) CreateProjectAverage(ctx context.Context, dat
 		return custom_error.New(http.StatusInternalServerError, "Failed to create project average", err)
 	}
 
-	// Check to see if we inserted
 	var inserted bool
 	for {
 		var row []bigquery.Value
@@ -78,13 +78,11 @@ func (r *projectAverageRepository) CreateProjectAverage(ctx context.Context, dat
 			return custom_error.New(http.StatusInternalServerError, "Error reading insertion result", err)
 		}
 
-		// Extract the boolean value
 		if len(row) > 0 {
 			inserted, _ = row[0].(bool)
 		}
 	}
 
-	// If no row was inserted, return an error, likely incorrect project id
 	if !inserted {
 		return custom_error.New(http.StatusBadRequest, 
 			"Failed to insert, please make sure your project id is correct: "+data.ProjectID, 
@@ -92,6 +90,48 @@ func (r *projectAverageRepository) CreateProjectAverage(ctx context.Context, dat
 	}
 
 	return nil
+}
+
+func (r *projectAverageRepository) GetProjectAveragesByProjectID(ctx context.Context, projectID string) ([]models.ProjectAverage, error) {
+	query := `
+		SELECT 
+			project_id,
+			start_time,
+			end_time,
+			baseline,
+			contract_threshold,
+			average_output
+		FROM 
+			gridstream_operations.project_averages
+		WHERE 
+			project_id = @project_id
+		ORDER BY 
+			start_time DESC;
+	`
+
+	params := []bigquery.QueryParameter{
+		{Name: "project_id", Value: projectID},
+	}
+
+	it, err := r.client.Query(ctx, query, params)
+	if err != nil {
+		return nil, custom_error.New(http.StatusInternalServerError, "Failed to fetch project averages", err)
+	}
+
+	averages := []models.ProjectAverage{}
+	for {
+		var item models.ProjectAverage
+		err := it.Next(&item)
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, custom_error.New(http.StatusInternalServerError, "Error reading project average data", err)
+		}
+		averages = append(averages, item)
+	}
+
+	return averages, nil
 }
 
 func (r *projectAverageRepository) GetProjectAveragesByDateRange(ctx context.Context, projectID string, startTime, endTime time.Time) ([]models.ProjectAverage, error) {
