@@ -26,6 +26,8 @@ func AddRoutes(
 	derMetaRepo := repositories.NewDERMetadataRepository(bqClient, log)
 	drEventsRepo := repositories.NewDREventRepository(bqClient, log)
 	notificationRepo := repositories.NewNotificationRepository(fbClient, log)
+	projectAverageRepo := repositories.NewProjectAverageRepository(bqClient, log) 
+
 
 	// init handlers
 	projectHandlers := handlers.NewProjectHandlers(projectRepo, log)
@@ -35,6 +37,7 @@ func AddRoutes(
 	derHandler := handlers.NewDERMetadataHandlers(derMetaRepo, log)
 	drEventsHandler := handlers.NewDREventHandlers(drEventsRepo, log)
 	notificationHandler := handlers.NewNotificationHandler(notificationRepo, log)
+	projectAverageHandlers := handlers.NewProjectAverageHandlers(projectAverageRepo, log)
 
 	// init middlewares
 	authMiddleware := middlewares.NewAuthMiddleware(fbClient, log)
@@ -96,6 +99,11 @@ func AddRoutes(
 		r.Route("/notifications", func(r chi.Router) {
 			r.Use(authMiddleware.RequireAuth)
 			r.Post("/", middlewares.WrapHandler(notificationHandler.NotifyUserHandler, log))
+		})
+
+		r.Route("/project-averages", func(r chi.Router) {
+			r.With(authMiddleware.RequireRole("Residential", "Utility")).Post("/", middlewares.WrapHandler(projectAverageHandlers.CreateProjectAverageHandler, log))
+			r.With(authMiddleware.RequireRole("Residential", "Utility")).Get("/", middlewares.WrapHandler(projectAverageHandlers.GetProjectAveragesHandler, log))
 		})
 	})
 
