@@ -4,24 +4,20 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/grid-stream-org/api/pkg/firebase"
 	"github.com/grid-stream-org/go-commons/pkg/bqclient"
 	"github.com/grid-stream-org/go-commons/pkg/logger"
-	"github.com/joho/godotenv" // Still needed for local
+	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/pkg/errors"
 )
 
 type Config struct {
-	Port           int      `envconfig:"PORT"` // API port
+	Port           int      `envconfig:"PORT"`
 	AllowedOrigins []string `envconfig:"ALLOWED_ORIGINS"`
 	Database       *bqclient.Config
 	Logger         *logger.Config
-	Firebase       *FirebaseConfig
-}
-
-type FirebaseConfig struct {
-	ProjectID        string `envconfig:"FIREBASE_PROJECT_ID"`
-	GoogleCredential string `envconfig:"FIREBASE_GOOGLE_CREDENTIAL"`
+	Firebase       *firebase.FirebaseConfig
 }
 
 func Load() (*Config, error) {
@@ -44,7 +40,7 @@ func Load() (*Config, error) {
 	// also bypass this check if we are running unit tests
 	if os.Getenv("TEST_ENV") != "true" {
 		if _, err := os.Stat(cfg.Firebase.GoogleCredential); os.IsNotExist(err) {
-			return nil, errors.WithStack(fmt.Errorf("Firebase credentials file not found: %s", cfg.Firebase.GoogleCredential))
+			return nil, errors.WithStack(fmt.Errorf("firebase credentials file not found: %s", cfg.Firebase.GoogleCredential))
 		}
 	}
 

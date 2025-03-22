@@ -7,9 +7,13 @@ import (
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
-	"github.com/grid-stream-org/api/internal/config"
 	"google.golang.org/api/option"
 )
+
+type FirebaseConfig struct {
+	ProjectID        string `envconfig:"FIREBASE_PROJECT_ID"`
+	GoogleCredential string `envconfig:"FIREBASE_GOOGLE_CREDENTIAL"`
+}
 
 type FirebaseClient interface {
 	Auth() *auth.Client
@@ -35,8 +39,8 @@ func (f *firebaseClient) Close() error {
 }
 
 // NewFirebaseClient initializes Firebase Auth & Firestore clients
-func NewFirebaseClient(ctx context.Context, cfg *config.Config, log *slog.Logger) (FirebaseClient, error) {
-	opt := option.WithCredentialsFile(cfg.Firebase.GoogleCredential)
+func NewFirebaseClient(ctx context.Context, cfg *FirebaseConfig, log *slog.Logger) (FirebaseClient, error) {
+	opt := option.WithCredentialsFile(cfg.GoogleCredential)
 	app, err := firebase.NewApp(ctx, nil, opt)
 	if err != nil {
 		return nil, err
