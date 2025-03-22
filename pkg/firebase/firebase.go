@@ -11,8 +11,8 @@ import (
 )
 
 type FirebaseConfig struct {
-	ProjectID        string `envconfig:"FIREBASE_PROJECT_ID"`
-	GoogleCredential string `envconfig:"FIREBASE_GOOGLE_CREDENTIAL"`
+	ProjectID        string `envconfig:"FIREBASE_PROJECT_ID" koanf:"project_id"`
+	GoogleCredential string `envconfig:"FIREBASE_GOOGLE_CREDENTIAL" koanf:"google_credential"`
 }
 
 type FirebaseClient interface {
