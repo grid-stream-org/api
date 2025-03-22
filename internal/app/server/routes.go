@@ -27,6 +27,7 @@ func AddRoutes(
 	drEventsRepo := repositories.NewDREventRepository(bqClient, log)
 	notificationRepo := repositories.NewNotificationRepository(fbClient, log)
 	projectAverageRepo := repositories.NewProjectAverageRepository(bqClient, log) 
+	projectSummaryRepo := repositories.NewProjectSummaryRepository(bqClient, log)
 
 
 	// init handlers
@@ -38,6 +39,7 @@ func AddRoutes(
 	drEventsHandler := handlers.NewDREventHandlers(drEventsRepo, log)
 	notificationHandler := handlers.NewNotificationHandler(notificationRepo, log)
 	projectAverageHandlers := handlers.NewProjectAverageHandlers(projectAverageRepo, log)
+	projectSummaryHandler := handlers.NewProjectSummaryHandler(projectSummaryRepo, log)
 
 	// init middlewares
 	authMiddleware := middlewares.NewAuthMiddleware(fbClient, log)
@@ -69,6 +71,7 @@ func AddRoutes(
 			r.With(authMiddleware.RequireRole("Technician")).Post("/", middlewares.WrapHandler(utilHandlers.CreateUtilityHandler, log))
 			r.With(authMiddleware.RequireRole("Utility")).Put("/{id}", middlewares.WrapHandler(utilHandlers.UpdateUtilityHandler, log))
 			r.With(authMiddleware.RequireRole("Utility")).Delete("/{id}", middlewares.WrapHandler(utilHandlers.DeleteUtilityHandler, log))
+			r.With(authMiddleware.RequireRole("Utility")).Get("/project-summary", middlewares.WrapHandler(projectSummaryHandler.GetProjectSummaryHandler, log))
 		})
 
 		r.Route("/contracts", func(r chi.Router) {
