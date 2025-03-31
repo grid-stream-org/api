@@ -17,6 +17,7 @@ type UtilityHandler interface {
 	GetUtilityHandler(w http.ResponseWriter, r *http.Request) error
 	UpdateUtilityHandler(w http.ResponseWriter, r *http.Request) error
 	DeleteUtilityHandler(w http.ResponseWriter, r *http.Request) error
+	GetProjectSummaryHandler(w http.ResponseWriter, r *http.Request) error
 }
 
 type utilityHandler struct {
@@ -105,5 +106,35 @@ func (handler *utilityHandler) DeleteUtilityHandler(w http.ResponseWriter, r *ht
 		return err
 	}
 	w.WriteHeader(http.StatusOK)
+	return nil
+}
+
+func (handler *utilityHandler) GetProjectSummaryHandler(w http.ResponseWriter, r *http.Request) error {
+	utilityID := r.URL.Query().Get("utility_id")
+	if utilityID == "" {
+		return custom_error.New(http.StatusBadRequest, "utility_id query parameter is required", nil)
+	}
+
+	summaries, err := handler.Repo.GetProjectSummary(r.Context(), utilityID)
+	if err != nil {
+		return err
+	}
+
+	// Create a default summary if no data was found
+	var summary models.ProjectSummary
+	if len(summaries) > 0 {
+		summary = summaries[0]
+	} else {
+		summary = models.ProjectSummary{
+			TotalActive:    0,
+			TotalPending:   0,
+			TotalThreshold: 0,
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(summary); err != nil {
+		return custom_error.New(http.StatusInternalServerError, "Error encoding response", err)
+	}
 	return nil
 }
