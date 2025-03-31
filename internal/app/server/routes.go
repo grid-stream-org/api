@@ -69,6 +69,7 @@ func AddRoutes(
 			r.With(authMiddleware.RequireRole("Technician")).Post("/", middlewares.WrapHandler(utilHandlers.CreateUtilityHandler, log))
 			r.With(authMiddleware.RequireRole("Utility")).Put("/{id}", middlewares.WrapHandler(utilHandlers.UpdateUtilityHandler, log))
 			r.With(authMiddleware.RequireRole("Utility")).Delete("/{id}", middlewares.WrapHandler(utilHandlers.DeleteUtilityHandler, log))
+			r.With(authMiddleware.RequireRole("Utility")).Get("/project-summary", middlewares.WrapHandler(utilHandlers.GetProjectSummaryHandler, log))
 		})
 
 		r.Route("/contracts", func(r chi.Router) {
