@@ -127,22 +127,25 @@ func (r *drEventRepository) DeleteDREvent(ctx context.Context, id string) error 
 
 func (r *drEventRepository) GetDREventsByProjectID(ctx context.Context, id string) ([]models.DREvents, error) {
 	query := `
-        SELECT 
-            dr.id AS id,
-            dr.start_time,
-            dr.end_time,
-            dr.utility_id
-        FROM 
-            gridstream_operations.projects AS p
-        JOIN 
-            gridstream_operations.dr_events AS dr
-        ON 
-            p.utility_id = dr.utility_id
-        WHERE 
-            p.id = @project_id
-        ORDER BY 
-            dr.start_time DESC;
-    `
+		SELECT
+			dr.id AS id,
+			dr.start_time,
+			dr.end_time,
+			dr.utility_id,
+			u.display_name AS utility_name
+		FROM
+			gridstream_operations.projects AS p
+		JOIN
+			gridstream_operations.dr_events AS dr
+			ON p.utility_id = dr.utility_id
+		JOIN
+			gridstream_operations.utilities AS u
+			ON dr.utility_id = u.id
+		WHERE
+			p.id = @project_id
+		ORDER BY
+			dr.start_time DESC;
+	`
 
 	params := []bigquery.QueryParameter{
 		{Name: "project_id", Value: id},
